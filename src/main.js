@@ -3,6 +3,12 @@ import Health from "./health";
 let ctx; // Declare ctx in global scope
 let canvas;
 let healths = []; // Store health instances
+let interaction;
+if (window.innerWidth < 800) {
+  interaction = "touch";
+} else {
+  interaction = "click";
+}
 
 // Health bar configuration data
 const healthConfigs = [
@@ -132,7 +138,7 @@ function setupEventListeners() {
   });
 
   // Click interaction
-  window.addEventListener("click", (e) => {
+  window.addEventListener(interaction, (e) => {
     healths.forEach((health) => {
       if (health.isHover) {
         health.isDanger = !health.isDanger;
