@@ -140,6 +140,20 @@ function setupEventListeners() {
   // Click interaction
   window.addEventListener(interaction, (e) => {
     healths.forEach((health) => {
+      if (interaction === "touch") {
+        const touchX = e.touches[0].clientX;
+        const touchY = e.touches[0].clientY;
+        if (
+          touchX >= health.x &&
+          touchX <= health.x + health.width &&
+          touchY >= health.y &&
+          touchY <= health.y + health.height
+        ) {
+          health.isHover = true;
+        } else {
+          health.isHover = false;
+        }
+      }
       if (health.isHover) {
         health.isDanger = !health.isDanger;
         console.log("Clicked! isDanger:", health.isDanger);
