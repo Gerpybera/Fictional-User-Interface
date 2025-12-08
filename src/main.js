@@ -3,12 +3,6 @@ import Health from "./health";
 let ctx; // Declare ctx in global scope
 let canvas;
 let healths = []; // Store health instances
-let interaction;
-if (window.innerWidth < 800) {
-  interaction = "touch";
-} else {
-  interaction = "click";
-}
 
 // Health bar configuration data
 const healthConfigs = [
@@ -114,50 +108,77 @@ function background(color) {
 }
 
 function setupEventListeners() {
-  // Mouse move for hover detection
+  // Mouse move for hover detection (desktop)
   window.addEventListener("mousemove", (e) => {
-    const mouseX = e.clientX;
-    const mouseY = e.clientY;
-    let isHoveringAny = false;
-
-    healths.forEach((health) => {
-      if (
-        mouseX >= health.x &&
-        mouseX <= health.x + health.width &&
-        mouseY >= health.y &&
-        mouseY <= health.y + health.height
-      ) {
-        health.isHover = true;
-        isHoveringAny = true;
-      } else {
-        health.isHover = false;
-      }
-    });
-
-    document.body.style.cursor = isHoveringAny ? "pointer" : "default";
+    handleHover(e.clientX, e.clientY);
   });
 
-  // Click interaction
-  window.addEventListener(interaction, (e) => {
-    healths.forEach((health) => {
-      if (interaction === "touch") {
-        const touchX = e.touches[0].clientX;
-        const touchY = e.touches[0].clientY;
-        if (
-          touchX >= health.x &&
-          touchX <= health.x + health.width &&
-          touchY >= health.y &&
-          touchY <= health.y + health.height
-        ) {
-          health.isHover = true;
-        } else {
-          health.isHover = false;
-        }
+  // Touch move for hover detection (mobile/tablet)
+  window.addEventListener(
+    "touchmove",
+    (e) => {
+      if (e.touches.length > 0) {
+        handleHover(e.touches[0].clientX, e.touches[0].clientY);
       }
-      if (health.isHover) {
-        health.isDanger = !health.isDanger;
-        console.log("Clicked! isDanger:", health.isDanger);
+    },
+    { passive: true }
+  );
+
+  // Click interaction (desktop)
+  window.addEventListener("click", (e) => {
+    handleInteraction(e.clientX, e.clientY);
+  });
+
+  // Touch interaction (mobile/tablet)
+  window.addEventListener("touchend", (e) => {
+    if (e.changedTouches.length > 0) {
+      const touch = e.changedTouches[0];
+      handleInteraction(touch.clientX, touch.clientY);
+    }
+  });
+
+  // Prevent double-tap zoom on mobile
+  window.addEventListener(
+    "touchstart",
+    (e) => {
+      if (e.touches.length > 1) {
+        e.preventDefault();
       }
-    });
+    },
+    { passive: false }
+  );
+}
+
+function handleHover(x, y) {
+  let isHoveringAny = false;
+
+  healths.forEach((health) => {
+    if (
+      x >= health.x &&
+      x <= health.x + health.width &&
+      y >= health.y &&
+      y <= health.y + health.height
+    ) {
+      health.isHover = true;
+      isHoveringAny = true;
+    } else {
+      health.isHover = false;
+    }
+  });
+
+  document.body.style.cursor = isHoveringAny ? "pointer" : "default";
+}
+
+function handleInteraction(x, y) {
+  healths.forEach((health) => {
+    if (
+      x >= health.x &&
+      x <= health.x + health.width &&
+      y >= health.y &&
+      y <= health.y + health.height
+    ) {
+      health.isDanger = !health.isDanger;
+      console.log("Interacted! isDanger:", health.isDanger);
+    }
   });
 }
