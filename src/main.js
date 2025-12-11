@@ -4,6 +4,11 @@ let ctx; // Declare ctx in global scope
 let canvas;
 let healths = []; // Store health instances
 
+let ctx2;
+let canvas2;
+
+let isButtonPressed = false;
+
 // Health bar configuration data
 const healthConfigs = [
   { color: "cyan", textUp: "CARDIO", textUn: "VASCULAR" },
@@ -15,9 +20,56 @@ const healthConfigs = [
 ];
 
 window.onload = () => {
-  InitializeHealth();
+  CreateMainMenu();
 };
 //Create Main Meun
+
+function CreateMainMenu() {
+  canvas2 = document.createElement("canvas");
+  canvas2.id = "canvas2";
+  canvas2.width = window.innerWidth;
+  canvas2.height = window.innerHeight;
+  document.body.appendChild(canvas2);
+  ctx2 = canvas2.getContext("2d");
+
+  ctx2.fillStyle = "black";
+  ctx2.fillRect(0, 0, canvas2.width, canvas2.height);
+  createButton(canvas2.width / 2 - 50, canvas2.height / 2 - 50, 100, 100);
+}
+function createButton(x, y, width, height) {
+  ctx2.fillStyle = "white";
+
+  ctx2.fillRect(x, y, width, height);
+
+  // Handle button press (shared logic)
+  function handleButtonPress(clientX, clientY) {
+    if (
+      clientX >= x &&
+      clientX <= x + width &&
+      clientY >= y &&
+      clientY <= y + height
+    ) {
+      isButtonPressed = true;
+      console.log("Button Pressed");
+      console.log(isButtonPressed);
+      document.body.removeChild(canvas2);
+      InitializeHealth();
+    }
+  }
+
+  // Mouse click (desktop)
+  canvas2.addEventListener("mousedown", (e) => {
+    handleButtonPress(e.clientX, e.clientY);
+  });
+
+  // Touch (mobile/tablet)
+  canvas2.addEventListener("touchend", (e) => {
+    if (e.changedTouches.length > 0) {
+      const touch = e.changedTouches[0];
+      handleButtonPress(touch.clientX, touch.clientY);
+    }
+  });
+}
 
 //Creating Health Bars
 
