@@ -19,15 +19,18 @@ let isPaused = false; // Track if health bars are paused
 
 //Audio parts
 
-const warningLoop = new Audio("./public/computer-malfunction.wav");
+const warningLoop = new Audio("computer-malfunction.wav");
 warningLoop.loop = true;
 
-const criticalAlarm = new Audio("./public/life-functions-critical.wav");
+const criticalAlarm = new Audio("life-functions-critical.wav");
 criticalAlarm.loop = true;
 
-if (warningLoop) {
-  console.log("Audio loaded successfully");
-}
+warningLoop.addEventListener("canplaythrough", () =>
+  console.log("Warning audio loaded")
+);
+criticalAlarm.addEventListener("canplaythrough", () =>
+  console.log("Critical audio loaded")
+);
 // Health bar configuration data
 const healthConfigs = [
   { color: "cyan", textUp: "CARDIO", textUn: "VASCULAR" },
@@ -39,6 +42,7 @@ const healthConfigs = [
 ];
 
 window.onload = () => {
+  if (!criticalAlarm.readyState || !warningLoop.readyState) return;
   CreateMainMenu();
 };
 //Create Main Meun
@@ -90,15 +94,23 @@ function createButton(x, y, width, height) {
     ) {
       // Unlock audio for iOS/iPad
       warningLoop.muted = true;
-      warningLoop.play().then(() => {
-        warningLoop.pause();
-        warningLoop.muted = false;
-      });
+      warningLoop
+        .play()
+        .then(() => {
+          warningLoop.pause();
+          warningLoop.muted = false;
+          console.log("Warning audio unlocked");
+        })
+        .catch((e) => console.warn("Warning audio unlock failed", e));
       criticalAlarm.muted = true;
-      criticalAlarm.play().then(() => {
-        criticalAlarm.pause();
-        criticalAlarm.muted = false;
-      });
+      criticalAlarm
+        .play()
+        .then(() => {
+          criticalAlarm.pause();
+          criticalAlarm.muted = false;
+          console.log("Critical audio unlocked");
+        })
+        .catch((e) => console.warn("Critical audio unlock failed", e));
 
       isButtonPressed = true;
       console.log("Button Pressed");
