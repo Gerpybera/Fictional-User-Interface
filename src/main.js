@@ -19,6 +19,7 @@ let isPaused = false; // Track if health bars are paused
 let terminationTimer = null; // Timer when all healths are in danger
 let terminated = false; // Permanent termination state
 
+let alphaText = 1.0; // For fade effects
 //Audio parts
 
 const warningLoop = new Audio("computer-malfunction.wav");
@@ -27,12 +28,6 @@ warningLoop.loop = true;
 const criticalAlarm = new Audio("life-functions-critical.wav");
 criticalAlarm.loop = true;
 
-warningLoop.addEventListener("canplaythrough", () =>
-  console.log("Warning audio loaded")
-);
-criticalAlarm.addEventListener("canplaythrough", () =>
-  console.log("Critical audio loaded")
-);
 // Health bar configuration data
 const healthConfigs = [
   { color: "cyan", textUp: "CARDIO", textUn: "VASCULAR" },
@@ -306,7 +301,7 @@ function handleInteraction(x, y) {
       if (isPaused) return; // Ignore interaction if paused
       if (health.isDanger) {
         health.isDanger = !health.isDanger;
-        console.log("Interacted! isDanger:", health.isDanger);
+        //console.log("Interacted! isDanger:", health.isDanger);
       }
     }
   });
@@ -322,7 +317,8 @@ function checkDangerCondition() {
     dangerCount >= 4 &&
     !warningActive &&
     dangerCount !== lastDangerCount &&
-    !hasCriticalShown
+    !hasCriticalShown &&
+    !terminated
   ) {
     showWarning("critical");
     hasCriticalShown = true;
@@ -333,7 +329,8 @@ function checkDangerCondition() {
     dangerCount < 4 &&
     !warningActive &&
     !hasWarningShown &&
-    dangerCount !== lastDangerCount
+    dangerCount !== lastDangerCount &&
+    !terminated
   ) {
     showWarning("warning");
     hasWarningShown = true;
@@ -369,10 +366,10 @@ function checkDangerCondition() {
 }
 
 function showWarning(level) {
-  if (terminated) return; // don't show warnings when terminated
   const dangerCount2 = healths.filter((health) => health.isDanger).length;
   if (warningActive) return; // Prevent multiple warnings
 
+  //alphaText = getDecreaseAlpha();
   warningActive = true;
   isPaused = true; // Pause health bar progression
   healths.forEach((h) => h.pauseDanger());
@@ -386,27 +383,6 @@ function showWarning(level) {
   canvas3.style.pointerEvents = "none"; // Allow clicks to pass through
   document.body.appendChild(canvas3);
   ctx3 = canvas3.getContext("2d");
-
-  // Different colors and text based on warning level
-  let bgColor, text;
-  if (level === "critical") {
-    bgColor = "rgba(255, 174, 0, 1)"; // Purple for critical
-    text = "LIFE FUNCTIONS CRITICAL";
-  } else {
-    bgColor = "rgba(255, 0, 0, 1)"; // Red for warning
-    text = "COMPUTER MALFUNCTION";
-  }
-
-  ctx3.fillStyle = bgColor;
-  ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
-
-  // Add warning text
-  const fontSize = Math.min(canvas3.width, canvas3.height) * 0.08;
-  ctx3.font = `bold ${fontSize}px Arial`;
-  ctx3.fillStyle = "white";
-  ctx3.textAlign = "center";
-  ctx3.textBaseline = "middle";
-  ctx3.fillText(text, canvas3.width / 2, canvas3.height / 2);
 
   // Remove warning after 3 seconds
   setTimeout(() => {
@@ -428,6 +404,51 @@ function showWarning(level) {
   if (dangerCount2 < 2) {
     stopAllSounds();
   }
+  drawWarning(level, alphaText);
+}
+
+function drawWarning(level, alphaText) {
+  // Different colors and text based on warning level
+  let bgColor, text;
+  if (level === "critical") {
+    bgColor = "rgba(255, 174, 0, 1)"; // Purple for critical
+    text = "LIFE FUNCTIONS CRITICAL";
+  } else {
+    bgColor = "rgba(255, 0, 0, 1)"; // Red for warning
+    text = "COMPUTER MALFUNCTION";
+  }
+
+  ctx3.fillStyle = bgColor;
+  ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
+
+  // Add warning text
+  const fontSize = Math.min(canvas3.width, canvas3.height) * 0.125;
+  ctx3.font = `bold ${fontSize}px Arial`;
+  ctx3.fillStyle = `rgba(255, 255, 255, ${alphaText})`;
+  //ctx3.fillStyle = `white`;
+  ctx3.textAlign = "center";
+  ctx3.textBaseline = "middle";
+  ctx3.fillText(text, canvas3.width / 2, canvas3.height / 2);
+  alphaText -= 0.01;
+  if (alphaText <= 0) {
+    alphaText = 0;
+    return;
+  }
+  console.log("AlphaText:", alphaText);
+  requestAnimationFrame(() => drawWarning(level, alphaText));
+}
+
+function getDecreaseAlpha() {
+  let alpha = 1.0;
+  const decreaseInterval = setInterval(() => {
+    alpha -= 0.01;
+    console.log("Alpha:", alpha);
+    if (alpha <= 0) {
+      alpha = 0;
+      clearInterval(decreaseInterval);
+    }
+  }, 30); // Decrease alpha every 30ms
+  return alpha;
 }
 
 function terminate() {
