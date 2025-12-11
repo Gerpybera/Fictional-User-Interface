@@ -34,6 +34,26 @@ function CreateMainMenu() {
 
   ctx2.fillStyle = "black";
   ctx2.fillRect(0, 0, canvas2.width, canvas2.height);
+
+  let titleSizeX = canvas2.width * 0.8;
+  let titleSizeY = canvas2.height * 0.4;
+
+  ctx2.fillStyle = "green";
+  ctx2.fillRect(
+    canvas2.width / 2 - titleSizeX / 2,
+    canvas2.height / 4 - titleSizeY / 2,
+    titleSizeX,
+    titleSizeY
+  );
+  let titleFontSize = Math.min(canvas2.width, canvas2.height) * 0.09;
+  ctx2.font = `${titleFontSize}px Arial`;
+  ctx2.fillStyle = "white";
+  ctx2.textAlign = "center";
+  ctx2.fillText(
+    "LIFE FUNCTIONS SIMULATION",
+    canvas2.width / 2,
+    canvas2.height / 2 - titleSizeY / 2
+  );
   createButton(canvas2.width / 2 - 50, canvas2.height / 2 - 50, 100, 100);
 }
 function createButton(x, y, width, height) {
