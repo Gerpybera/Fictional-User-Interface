@@ -108,9 +108,15 @@ export default class Health {
   }
   textPannelName(x, y, text) {
     this.ctx.fillStyle = "white";
-    this.ctx.font = "30px Arial";
-    this.ctx.fillText(this.textUpper, x + 20, y + 50);
-    this.ctx.fillText(this.textUnder, x + 20, y + 100);
+    // Responsive font size based on panel height
+    const fontSize = Math.max(this.height * 0.25, 12); // 25% of height, minimum 12px
+    this.ctx.font = `bold ${fontSize}px Arial`;
+
+    // Responsive text positioning
+    const paddingX = this.width * 0.1;
+    const lineHeight = this.height * 0.35;
+    this.ctx.fillText(this.textUpper, x + paddingX, y + lineHeight);
+    this.ctx.fillText(this.textUnder, x + paddingX, y + lineHeight * 2);
   }
   gridSquare(x, y, size, numX, numY) {
     this.ctx.lineWidth = 1;
