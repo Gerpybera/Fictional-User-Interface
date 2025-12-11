@@ -19,8 +19,8 @@
   <body>
     <script type="module" src="./src/main.js"></script>
     <script>
-      // Register Service Worker
-      if ('serviceWorker' in navigator) {
+      // Register Service Worker (only in production)
+      if ('serviceWorker' in navigator && window.location.hostname !== 'localhost') {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./sw.js')
             .then((registration) => {

@@ -107,7 +107,7 @@ function createHealthBars() {
   const numBars = healthConfigs.length;
 
   // Calculate dimensions based on canvas size
-  const barHeight = canvas.height * 0.11;
+  const barHeight = canvas.height * 0.1;
   const gap = canvas.height * 0.02; // 2% of canvas height as gap between bars
   const spacing = barHeight + gap;
 
@@ -119,7 +119,7 @@ function createHealthBars() {
 
   // Calculate total width of a health bar:
   // panelWidth (canvas.width/6) + 10 grid squares (each is (barHeight/4) * 5)
-  const panelWidth = canvas.width / 6;
+  const panelWidth = canvas.width * 0.15;
   const gridSquareWidth = (barHeight / 4) * 5;
   const totalBarWidth = panelWidth + 10 * gridSquareWidth;
 

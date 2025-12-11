@@ -1,8 +1,8 @@
 export default class Health {
   constructor(x, y, ctx, bColor, textUp, textUn, index) {
     // Design PART
-    this.width = ctx.canvas.width / 6;
-    this.height = ctx.canvas.height * 0.11;
+    this.width = ctx.canvas.width * 0.15;
+    this.height = ctx.canvas.height * 0.1;
     this.x = x;
     this.y = y;
     this.textUpper = textUp;
