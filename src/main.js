@@ -88,6 +88,18 @@ function createButton(x, y, width, height) {
       clientY >= y &&
       clientY <= y + height
     ) {
+      // Unlock audio for iOS/iPad
+      warningLoop.muted = true;
+      warningLoop.play().then(() => {
+        warningLoop.pause();
+        warningLoop.muted = false;
+      });
+      criticalAlarm.muted = true;
+      criticalAlarm.play().then(() => {
+        criticalAlarm.pause();
+        criticalAlarm.muted = false;
+      });
+
       isButtonPressed = true;
       console.log("Button Pressed");
       console.log(isButtonPressed);
