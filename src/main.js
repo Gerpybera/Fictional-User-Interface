@@ -7,7 +7,15 @@ let healths = []; // Store health instances
 let ctx2;
 let canvas2;
 
+let ctx3;
+let canvas3;
+
 let isButtonPressed = false;
+let warningActive = false; // Track if warning is currently showing
+let hasWarningShown = false; // Track if warning has been shown before
+let hasCriticalShown = false; // Track if critical warning has been shown before
+let lastDangerCount = 0; // Track previous danger count to detect changes
+let isPaused = false; // Track if health bars are paused
 
 // Health bar configuration data
 const healthConfigs = [
@@ -169,10 +177,14 @@ function createHealthBars() {
 }
 
 function draw() {
+  // Check for danger condition (2 or more in danger mode) FIRST
+  checkDangerCondition();
+
   background("black");
 
-  // Just call draw on existing instances
-  healths.forEach((health) => health.draw());
+  // Just call draw on existing instances, pass isPaused state
+  healths.forEach((health) => health.draw(isPaused));
+
   requestAnimationFrame(draw);
 }
 function background(color) {
@@ -259,3 +271,86 @@ function handleInteraction(x, y) {
 }
 
 //Create Warning System
+
+function checkDangerCondition() {
+  const dangerCount = healths.filter((health) => health.isDanger).length;
+
+  // Show critical warning when 4 or more are in danger
+  if (
+    dangerCount >= 4 &&
+    !warningActive &&
+    dangerCount !== lastDangerCount &&
+    !hasCriticalShown
+  ) {
+    showWarning("critical");
+    hasCriticalShown = true;
+  }
+  // Show warning when 2-4 are in danger
+  else if (
+    dangerCount >= 2 &&
+    dangerCount < 4 &&
+    !warningActive &&
+    !hasWarningShown &&
+    dangerCount !== lastDangerCount
+  ) {
+    showWarning("warning");
+    hasWarningShown = true;
+  }
+
+  lastDangerCount = dangerCount;
+  if (dangerCount < 2) {
+    hasWarningShown = false; // Reset once danger count drops below 2
+  }
+  if (dangerCount < 4) {
+    hasCriticalShown = false; // Reset once danger count drops below 4
+  }
+}
+
+function showWarning(level) {
+  if (warningActive) return; // Prevent multiple warnings
+
+  warningActive = true;
+  isPaused = true; // Pause health bar progression
+  healths.forEach((h) => h.pauseDanger());
+  canvas3 = document.createElement("canvas");
+  canvas3.id = "canvas3";
+  canvas3.width = window.innerWidth;
+  canvas3.height = window.innerHeight;
+  canvas3.style.position = "absolute";
+  canvas3.style.top = "0";
+  canvas3.style.left = "0";
+  canvas3.style.pointerEvents = "none"; // Allow clicks to pass through
+  document.body.appendChild(canvas3);
+  ctx3 = canvas3.getContext("2d");
+
+  // Different colors and text based on warning level
+  let bgColor, text;
+  if (level === "critical") {
+    bgColor = "rgba(128, 0, 128, 0.7)"; // Purple for critical
+    text = "☠ CRITICAL ☠";
+  } else {
+    bgColor = "rgba(255, 0, 0, 0.5)"; // Red for warning
+    text = "⚠ WARNING ⚠";
+  }
+
+  ctx3.fillStyle = bgColor;
+  ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
+
+  // Add warning text
+  const fontSize = Math.min(canvas3.width, canvas3.height) * 0.08;
+  ctx3.font = `bold ${fontSize}px Arial`;
+  ctx3.fillStyle = "white";
+  ctx3.textAlign = "center";
+  ctx3.textBaseline = "middle";
+  ctx3.fillText(text, canvas3.width / 2, canvas3.height / 2);
+
+  // Remove warning after 3 seconds
+  setTimeout(() => {
+    if (canvas3 && canvas3.parentNode) {
+      document.body.removeChild(canvas3);
+    }
+    warningActive = false;
+    isPaused = false; // Resume health bar progression
+    healths.forEach((h) => h.resumeDanger());
+  }, 3000);
+}

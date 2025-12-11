@@ -29,7 +29,7 @@ export default class Health {
     this.draw();
     this.dangerEvent();
   }
-  draw() {
+  draw(isPaused = false) {
     //this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     //this.backgroundSet("black");
     this.healthCheck();
@@ -54,7 +54,7 @@ export default class Health {
       );
     }
 
-    this.healthSignal();
+    this.healthSignal(isPaused);
   }
   backgroundSet(color) {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -62,12 +62,18 @@ export default class Health {
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  healthSignal() {
-    //const y = this.baseY + Math.sin(this.angle) * this.amplitude;
-    this.baseX += 1; // Increment x position
+  healthSignal(isPaused = false) {
+    // Only progress if not paused
+    if (!isPaused) {
+      this.baseX += 1; // Increment x position
+    }
+
     const y = this.baseY + this.heartbeat(this.baseX) * this.amplitude;
-    this.trail.push({ x: this.baseX, y }); // Save history
-    if (this.trail.length > 1000) this.trail.shift(); // Limit length
+
+    if (!isPaused) {
+      this.trail.push({ x: this.baseX, y }); // Save history
+      if (this.trail.length > 1000) this.trail.shift(); // Limit length
+    }
 
     // Draw trail with lines connecting points and fading from left to right
     this.ctx.lineWidth = 2;
@@ -87,7 +93,9 @@ export default class Health {
       this.baseX = this.x + this.width; // Reset to start position
       this.trail = []; // Clear trail on reset
     }
-    this.angle += this.speed; // advance along the sine wave
+    if (!isPaused) {
+      this.angle += this.speed; // advance along the sine wave
+    }
     //console.log(this.baseX);
   }
   circle(x, y, radius) {
@@ -161,9 +169,20 @@ export default class Health {
     }
   }
   dangerEvent() {
-    setInterval(() => {
-      this.isDanger = true;
+    this._dangerPaused = false;
+    this._dangerInterval = setInterval(() => {
+      if (!this._dangerPaused) {
+        this.isDanger = true;
+      }
     }, Math.random() * 15000 + 2000);
+  }
+
+  pauseDanger() {
+    this._dangerPaused = true;
+  }
+
+  resumeDanger() {
+    this._dangerPaused = false;
   }
   healthyState() {
     this.color = this.originalColor;
