@@ -16,6 +16,8 @@ let hasWarningShown = false; // Track if warning has been shown before
 let hasCriticalShown = false; // Track if critical warning has been shown before
 let lastDangerCount = 0; // Track previous danger count to detect changes
 let isPaused = false; // Track if health bars are paused
+let terminationTimer = null; // Timer when all healths are in danger
+let terminated = false; // Permanent termination state
 
 //Audio parts
 
@@ -272,6 +274,7 @@ function setupEventListeners() {
 }
 
 function handleHover(x, y) {
+  if (terminated || isPaused) return; // no hover when paused/terminated
   let isHoveringAny = false;
 
   healths.forEach((health) => {
@@ -292,6 +295,7 @@ function handleHover(x, y) {
 }
 
 function handleInteraction(x, y) {
+  if (terminated || isPaused) return; // disable interaction when terminated or paused
   healths.forEach((health) => {
     if (
       x >= health.x &&
@@ -299,8 +303,11 @@ function handleInteraction(x, y) {
       y >= health.y &&
       y <= health.y + health.height
     ) {
-      health.isDanger = !health.isDanger;
-      console.log("Interacted! isDanger:", health.isDanger);
+      if (isPaused) return; // Ignore interaction if paused
+      if (health.isDanger) {
+        health.isDanger = !health.isDanger;
+        console.log("Interacted! isDanger:", health.isDanger);
+      }
     }
   });
 }
@@ -340,9 +347,29 @@ function checkDangerCondition() {
   if (dangerCount < 4) {
     hasCriticalShown = false; // Reset once danger count drops below 4
   }
+
+  // Termination logic: all healths in danger -> start 3s timer
+  if (!terminated && dangerCount === healths.length && healths.length > 0) {
+    if (!terminationTimer) {
+      terminationTimer = setTimeout(() => {
+        // Still all in danger? Double-check
+        const stillAllDanger = healths.every((h) => h.isDanger);
+        if (stillAllDanger) {
+          terminate();
+        }
+        terminationTimer = null;
+      }, 3000); // 3 seconds
+    }
+  } else {
+    if (terminationTimer) {
+      clearTimeout(terminationTimer);
+      terminationTimer = null;
+    }
+  }
 }
 
 function showWarning(level) {
+  if (terminated) return; // don't show warnings when terminated
   const dangerCount2 = healths.filter((health) => health.isDanger).length;
   if (warningActive) return; // Prevent multiple warnings
 
@@ -398,9 +425,44 @@ function showWarning(level) {
   } else {
     stopAllSounds();
   }
+  if (dangerCount2 < 2) {
+    stopAllSounds();
+  }
 }
-if (dangerCount2 < 2) {
+
+function terminate() {
+  terminated = true;
+  isPaused = true;
+  warningActive = true;
+  // Pause danger timers on each health
+  healths.forEach((h) => {
+    if (typeof h.pauseDanger === "function") h.pauseDanger();
+  });
   stopAllSounds();
+
+  // Create permanent canvas3 overlay that blocks interactions
+  canvas3 = document.createElement("canvas");
+  canvas3.id = "canvas3";
+  canvas3.width = window.innerWidth;
+  canvas3.height = window.innerHeight;
+  canvas3.style.position = "absolute";
+  canvas3.style.top = "0";
+  canvas3.style.left = "0";
+  canvas3.style.pointerEvents = "auto"; // Block interactions
+  document.body.appendChild(canvas3);
+  ctx3 = canvas3.getContext("2d");
+  ctx3.fillStyle = "black";
+  ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
+  const fontSize = Math.min(canvas3.width, canvas3.height) * 0.09;
+  ctx3.font = `bold ${fontSize}px Arial`;
+  ctx3.fillStyle = "red";
+  ctx3.textAlign = "center";
+  ctx3.textBaseline = "middle";
+  ctx3.fillText(
+    "LIFE FUNCTIONS TERMINATED",
+    canvas3.width / 2,
+    canvas3.height / 2
+  );
 }
 
 function playWarningSound() {
