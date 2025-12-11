@@ -15,10 +15,13 @@ const healthConfigs = [
 ];
 
 window.onload = () => {
-  setup();
+  InitializeHealth();
 };
+//Create Main Meun
 
-function setup() {
+//Creating Health Bars
+
+function InitializeHealth() {
   canvas = document.createElement("canvas");
   canvas.id = "canvas";
   document.body.appendChild(canvas);
@@ -182,3 +185,5 @@ function handleInteraction(x, y) {
     }
   });
 }
+
+//Create Warning System
