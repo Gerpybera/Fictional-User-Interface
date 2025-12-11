@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" fill="#000000"/>
+  <text x="96" y="110" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#00ffff" text-anchor="middle">FUI</text>
+  <rect x="30" y="130" width="132" height="8" fill="#00ff00" rx="2"/>
+  <rect x="30" y="145" width="100" height="8" fill="#7fffd4" rx="2"/>
+</svg>

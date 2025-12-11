@@ -3,4 +3,14 @@ body, html {
     padding: 0;
     box-sizing: border-box;
     overflow: hidden;
+    /* PWA: Prevent pull-to-refresh and overscroll */
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+    /* PWA: Prevent text selection on long press */
+    -webkit-user-select: none;
+    user-select: none;
+    /* PWA: Prevent tap highlight */
+    -webkit-tap-highlight-color: transparent;
+    /* PWA: Safe area for notched devices */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
