@@ -17,6 +17,17 @@ let hasCriticalShown = false; // Track if critical warning has been shown before
 let lastDangerCount = 0; // Track previous danger count to detect changes
 let isPaused = false; // Track if health bars are paused
 
+//Audio parts
+
+const warningLoop = new Audio("./public/computer-malfunction.wav");
+warningLoop.loop = true;
+
+const criticalAlarm = new Audio("./public/life-functions-critical.wav");
+criticalAlarm.loop = true;
+
+if (warningLoop) {
+  console.log("Audio loaded successfully");
+}
 // Health bar configuration data
 const healthConfigs = [
   { color: "cyan", textUp: "CARDIO", textUn: "VASCULAR" },
@@ -300,6 +311,7 @@ function checkDangerCondition() {
   lastDangerCount = dangerCount;
   if (dangerCount < 2) {
     hasWarningShown = false; // Reset once danger count drops below 2
+    stopAllSounds(); // Stop all sounds if no health is in danger
   }
   if (dangerCount < 4) {
     hasCriticalShown = false; // Reset once danger count drops below 4
@@ -307,6 +319,7 @@ function checkDangerCondition() {
 }
 
 function showWarning(level) {
+  const dangerCount2 = healths.filter((health) => health.isDanger).length;
   if (warningActive) return; // Prevent multiple warnings
 
   warningActive = true;
@@ -326,11 +339,11 @@ function showWarning(level) {
   // Different colors and text based on warning level
   let bgColor, text;
   if (level === "critical") {
-    bgColor = "rgba(128, 0, 128, 0.7)"; // Purple for critical
-    text = "☠ CRITICAL ☠";
+    bgColor = "rgba(255, 174, 0, 1)"; // Purple for critical
+    text = "LIFE FUNCTIONS CRITICAL";
   } else {
-    bgColor = "rgba(255, 0, 0, 0.5)"; // Red for warning
-    text = "⚠ WARNING ⚠";
+    bgColor = "rgba(255, 0, 0, 1)"; // Red for warning
+    text = "COMPUTER MALFUNCTION";
   }
 
   ctx3.fillStyle = bgColor;
@@ -353,4 +366,35 @@ function showWarning(level) {
     isPaused = false; // Resume health bar progression
     healths.forEach((h) => h.resumeDanger());
   }, 3000);
+
+  if (level === "warning") {
+    playWarningSound();
+  } else if (level === "critical") {
+    playCriticalSound();
+  } else {
+    stopAllSounds();
+  }
+}
+if (dangerCount2 < 2) {
+  stopAllSounds();
+}
+
+function playWarningSound() {
+  if (!warningLoop.paused) return; // Already playing
+  criticalAlarm.pause();
+  criticalAlarm.currentTime = 0;
+  warningLoop.play();
+}
+function playCriticalSound() {
+  if (!criticalAlarm.paused) return; // Already playing
+  warningLoop.pause();
+  warningLoop.currentTime = 0;
+  criticalAlarm.play();
+}
+
+function stopAllSounds() {
+  warningLoop.pause();
+  warningLoop.currentTime = 0;
+  criticalAlarm.pause();
+  criticalAlarm.currentTime = 0;
 }
