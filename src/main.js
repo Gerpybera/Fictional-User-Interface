@@ -23,10 +23,10 @@ let alphaText = 1.0; // For fade effects
 //Audio parts
 
 const warningLoop = new Audio("computer-malfunction.wav");
-warningLoop.loop = true;
+//warningLoop.loop = true;
 
 const criticalAlarm = new Audio("life-functions-critical.wav");
-criticalAlarm.loop = true;
+//criticalAlarm.loop = true;
 
 // Health bar configuration data
 const healthConfigs = [
@@ -366,6 +366,7 @@ function checkDangerCondition() {
 }
 
 function showWarning(level) {
+  if (terminated) return; // Do not show warnings if terminated
   const dangerCount2 = healths.filter((health) => health.isDanger).length;
   if (warningActive) return; // Prevent multiple warnings
 
@@ -404,10 +405,11 @@ function showWarning(level) {
   if (dangerCount2 < 2) {
     stopAllSounds();
   }
-  drawWarning(level, alphaText);
+  drawWarning(level);
 }
 
-function drawWarning(level, alphaText) {
+function drawWarning(level) {
+  if (terminated) return; // Do not draw warnings if terminated
   // Different colors and text based on warning level
   let bgColor, text;
   if (level === "critical") {
@@ -422,33 +424,17 @@ function drawWarning(level, alphaText) {
   ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
 
   // Add warning text
-  const fontSize = Math.min(canvas3.width, canvas3.height) * 0.125;
+  const fontSize = Math.min(canvas3.width, canvas3.height) * 0.09;
   ctx3.font = `bold ${fontSize}px Arial`;
   ctx3.fillStyle = `rgba(255, 255, 255, ${alphaText})`;
   //ctx3.fillStyle = `white`;
   ctx3.textAlign = "center";
   ctx3.textBaseline = "middle";
   ctx3.fillText(text, canvas3.width / 2, canvas3.height / 2);
-  alphaText -= 0.01;
-  if (alphaText <= 0) {
-    alphaText = 0;
-    return;
-  }
-  console.log("AlphaText:", alphaText);
-  requestAnimationFrame(() => drawWarning(level, alphaText));
-}
-
-function getDecreaseAlpha() {
-  let alpha = 1.0;
-  const decreaseInterval = setInterval(() => {
-    alpha -= 0.01;
-    console.log("Alpha:", alpha);
-    if (alpha <= 0) {
-      alpha = 0;
-      clearInterval(decreaseInterval);
-    }
-  }, 30); // Decrease alpha every 30ms
-  return alpha;
+  alphaText -= 0.005;
+  if (alphaText < 0) alphaText = 0;
+  console.log(alphaText);
+  requestAnimationFrame(() => drawWarning(level));
 }
 
 function terminate() {
@@ -472,11 +458,11 @@ function terminate() {
   canvas3.style.pointerEvents = "auto"; // Block interactions
   document.body.appendChild(canvas3);
   ctx3 = canvas3.getContext("2d");
-  ctx3.fillStyle = "black";
+  ctx3.fillStyle = "rgba(255, 0, 0, 1)";
   ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
   const fontSize = Math.min(canvas3.width, canvas3.height) * 0.09;
   ctx3.font = `bold ${fontSize}px Arial`;
-  ctx3.fillStyle = "red";
+  ctx3.fillStyle = "white";
   ctx3.textAlign = "center";
   ctx3.textBaseline = "middle";
   ctx3.fillText(
@@ -487,6 +473,7 @@ function terminate() {
 }
 
 function playWarningSound() {
+  alphaText = 1.0;
   if (!warningLoop.paused) return; // Already playing
   criticalAlarm.pause();
   criticalAlarm.currentTime = 0;
@@ -494,6 +481,7 @@ function playWarningSound() {
 }
 function playCriticalSound() {
   if (!criticalAlarm.paused) return; // Already playing
+  alphaText = 1.0;
   warningLoop.pause();
   warningLoop.currentTime = 0;
   criticalAlarm.play();
@@ -505,3 +493,15 @@ function stopAllSounds() {
   criticalAlarm.pause();
   criticalAlarm.currentTime = 0;
 }
+
+warningLoop.addEventListener("ended", () => {
+  //alphaText = 1.0;
+  console.log(alphaText);
+  playWarningSound();
+});
+
+criticalAlarm.addEventListener("ended", () => {
+  //alphaText = 1.0;
+  console.log(alphaText);
+  playCriticalSound();
+});
