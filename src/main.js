@@ -44,6 +44,8 @@ window.onload = () => {
 };
 //Create Main Meun
 
+let switchColor = false;
+
 function CreateMainMenu() {
   canvas2 = document.createElement("canvas");
   canvas2.id = "canvas2";
@@ -57,29 +59,61 @@ function CreateMainMenu() {
 
   let titleSizeX = canvas2.width * 0.8;
   let titleSizeY = canvas2.height * 0.4;
+  let fontColor = "white";
+  let titleFontSize = Math.min(canvas2.width, canvas2.height) * 0.09;
 
   ctx2.fillStyle = "green";
   ctx2.fillRect(
     canvas2.width / 2 - titleSizeX / 2,
-    canvas2.height / 4 - titleSizeY / 2,
+    canvas2.height / 2 - titleSizeY / 2,
     titleSizeX,
     titleSizeY
   );
-  let titleFontSize = Math.min(canvas2.width, canvas2.height) * 0.09;
   ctx2.font = `${titleFontSize}px Arial`;
-  ctx2.fillStyle = "white";
+  ctx2.fillStyle = fontColor;
   ctx2.textAlign = "center";
   ctx2.fillText(
     "LIFE FUNCTIONS SIMULATION",
     canvas2.width / 2,
-    canvas2.height / 2 - titleSizeY / 2
+    canvas2.height / 2 + titleFontSize / 4
   );
-  createButton(canvas2.width / 2 - 50, canvas2.height / 2 - 50, 100, 100);
+  setInterval(() => {
+    ctx2.fillStyle = switchColor ? "green" : "red";
+    ctx2.fillRect(
+      canvas2.width / 2 - titleSizeX / 2,
+      canvas2.height / 2 - titleSizeY / 2,
+      titleSizeX,
+      titleSizeY
+    );
+    ctx2.font = `${titleFontSize}px Arial`;
+    ctx2.fillStyle = fontColor;
+    ctx2.textAlign = "center";
+    ctx2.fillText(
+      "LIFE FUNCTIONS SIMULATION",
+      canvas2.width / 2,
+      canvas2.height / 2 + titleFontSize / 4
+    );
+    switchColor = !switchColor;
+  }, 500);
+  let buttonWidth = canvas2.width * 0.15;
+  let buttonHeight = canvas2.height * 0.1;
+  createButton(
+    canvas2.width / 2 - buttonWidth / 2,
+    canvas2.height * 0.8 - buttonHeight / 2,
+    buttonWidth,
+    buttonHeight
+  );
 }
 function createButton(x, y, width, height) {
-  ctx2.fillStyle = "white";
+  ctx2.strokeStyle = "white";
+  ctx2.lineWidth = 5;
 
-  ctx2.fillRect(x, y, width, height);
+  ctx2.strokeRect(x, y, width, height);
+  ctx2.font = `${Math.min(width, height) * 0.4}px Arial`;
+  ctx2.fillStyle = "white";
+  ctx2.textAlign = "center";
+  ctx2.textBaseline = "middle";
+  ctx2.fillText("START", x + width / 2, y + height / 2);
 
   // Handle button press (shared logic)
   function handleButtonPress(clientX, clientY) {
