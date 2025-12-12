@@ -23,10 +23,10 @@ let alphaText = 1.0; // For fade effects
 //Audio parts
 
 const warningLoop = new Audio("computer-malfunction.wav");
-//warningLoop.loop = true;
+warningLoop.preload = "auto";
 
 const criticalAlarm = new Audio("life-functions-critical.wav");
-//criticalAlarm.loop = true;
+criticalAlarm.preload = "auto";
 
 // Health bar configuration data
 const healthConfigs = [
@@ -74,7 +74,7 @@ function drawMainMenu() {
     titleSizeX,
     titleSizeY
   );
-  ctx2.font = `${titleFontSize}px Arial`;
+  ctx2.font = `bold ${titleFontSize}px Arial`;
   ctx2.fillStyle = fontColor;
   ctx2.textAlign = "center";
   ctx2.fillText(
@@ -430,6 +430,8 @@ function showWarning(level) {
   }
   drawWarning(level);
 }
+let isInWarningMode = false;
+let isInCriticalMode = false;
 
 function drawWarning(level) {
   if (terminated) return; // Do not draw warnings if terminated
@@ -438,9 +440,13 @@ function drawWarning(level) {
   if (level === "critical") {
     bgColor = "rgba(255, 174, 0, 1)"; // Purple for critical
     text = "LIFE FUNCTIONS CRITICAL";
+    isInWarningMode = false;
+    isInCriticalMode = true;
   } else {
     bgColor = "rgba(255, 0, 0, 1)"; // Red for warning
     text = "COMPUTER MALFUNCTION";
+    isInWarningMode = true;
+    isInCriticalMode = false;
   }
 
   ctx3.fillStyle = bgColor;
@@ -454,7 +460,7 @@ function drawWarning(level) {
   ctx3.textAlign = "center";
   ctx3.textBaseline = "middle";
   ctx3.fillText(text, canvas3.width / 2, canvas3.height / 2);
-  alphaText -= 0.01;
+  alphaText -= 0.05;
   if (alphaText < 0) alphaText = 0;
   console.log(alphaText);
   requestAnimationFrame(() => drawWarning(level));
@@ -495,19 +501,81 @@ function terminate() {
   );
 }
 
+const WARNING_LOOP_OFFSET = 0.2; // seconds before end to restart
+const CRITICAL_LOOP_OFFSET = 0.1; // seconds before end to restart
+
+let warningLoopInterval = null;
+let criticalLoopInterval = null;
+
 function playWarningSound() {
   alphaText = 1.0;
-  if (!warningLoop.paused) return; // Already playing
+  // Stop critical alarm if playing
   criticalAlarm.pause();
   criticalAlarm.currentTime = 0;
-  warningLoop.play();
+
+  // Only play if not already playing
+  if (warningLoop.paused) {
+    warningLoop.currentTime = 0;
+    warningLoop.play();
+  }
+
+  // Clear any previous interval
+  if (warningLoopInterval) clearInterval(warningLoopInterval);
+
+  // Custom loop with offset
+  warningLoopInterval = setInterval(() => {
+    if (
+      isInWarningMode &&
+      !terminated &&
+      warningLoop.duration &&
+      warningLoop.currentTime >= warningLoop.duration - WARNING_LOOP_OFFSET
+    ) {
+      warningLoop.currentTime = 0;
+      warningLoop.play();
+      alphaText = 1.0;
+    }
+    // Stop looping if not active
+    if (!isInWarningMode || terminated) {
+      clearInterval(warningLoopInterval);
+      warningLoopInterval = null;
+    }
+  }, 30);
 }
+
 function playCriticalSound() {
-  if (!criticalAlarm.paused) return; // Already playing
-  alphaText = 1.0;
+  // Stop warning loop if playing
   warningLoop.pause();
   warningLoop.currentTime = 0;
-  criticalAlarm.play();
+
+  alphaText = 1.0;
+
+  // Only play if not already playing
+  if (criticalAlarm.paused) {
+    criticalAlarm.currentTime = 0;
+    criticalAlarm.play();
+  }
+
+  // Clear any previous interval
+  if (criticalLoopInterval) clearInterval(criticalLoopInterval);
+
+  // Custom loop with offset
+  criticalLoopInterval = setInterval(() => {
+    if (
+      isInCriticalMode &&
+      !terminated &&
+      criticalAlarm.duration &&
+      criticalAlarm.currentTime >= criticalAlarm.duration - CRITICAL_LOOP_OFFSET
+    ) {
+      criticalAlarm.currentTime = 0;
+      criticalAlarm.play();
+      alphaText = 1.0;
+    }
+    // Stop looping if not active
+    if (!isInCriticalMode || terminated) {
+      clearInterval(criticalLoopInterval);
+      criticalLoopInterval = null;
+    }
+  }, 30);
 }
 
 function stopAllSounds() {
@@ -515,7 +583,16 @@ function stopAllSounds() {
   warningLoop.currentTime = 0;
   criticalAlarm.pause();
   criticalAlarm.currentTime = 0;
+  if (warningLoopInterval) {
+    clearInterval(warningLoopInterval);
+    warningLoopInterval = null;
+  }
+  if (criticalLoopInterval) {
+    clearInterval(criticalLoopInterval);
+    criticalLoopInterval = null;
+  }
 }
+/*
 
 warningLoop.addEventListener("ended", () => {
   //alphaText = 1.0;
@@ -528,3 +605,4 @@ criticalAlarm.addEventListener("ended", () => {
   console.log(alphaText);
   playCriticalSound();
 });
+*/
