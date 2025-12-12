@@ -119,7 +119,6 @@ function createButton(x, y, width, height) {
         .then(() => {
           warningLoop.pause();
           warningLoop.muted = false;
-          console.log("Warning audio unlocked");
         })
         .catch((e) => console.warn("Warning audio unlock failed", e));
       criticalAlarm.muted = true;
@@ -128,13 +127,10 @@ function createButton(x, y, width, height) {
         .then(() => {
           criticalAlarm.pause();
           criticalAlarm.muted = false;
-          console.log("Critical audio unlocked");
         })
         .catch((e) => console.warn("Critical audio unlock failed", e));
 
       isButtonPressed = true;
-      console.log("Button Pressed");
-      console.log(isButtonPressed);
       document.body.removeChild(canvas2);
       InitializeHealth();
     }
@@ -462,7 +458,7 @@ function drawWarning(level) {
   ctx3.fillText(text, canvas3.width / 2, canvas3.height / 2);
   alphaText -= 0.01;
   if (alphaText < 0) alphaText = 0;
-  console.log(alphaText);
+
   requestAnimationFrame(() => drawWarning(level));
 }
 
@@ -593,7 +589,43 @@ function stopAllSounds() {
   }
 }
 /*
+function playWarningSound() {
+  alphaText = 1.0;
+  // Stop critical alarm if playing
+  criticalAlarm.pause();
+  criticalAlarm.currentTime = 0;
 
+  // Only play if not already playing
+  if (warningLoop.paused) {
+    warningLoop.currentTime = 0;
+    warningLoop.loop = true; // Restore default looping
+    warningLoop.play();
+  }
+}
+
+function playCriticalSound() {
+  // Stop warning loop if playing
+  warningLoop.pause();
+  warningLoop.currentTime = 0;
+
+  alphaText = 1.0;
+
+  // Only play if not already playing
+  if (criticalAlarm.paused) {
+    criticalAlarm.currentTime = 0;
+    criticalAlarm.loop = true; // Restore default looping
+    criticalAlarm.play();
+  }
+}
+
+function stopAllSounds() {
+  warningLoop.pause();
+  warningLoop.currentTime = 0;
+  warningLoop.loop = false; // Stop looping
+  criticalAlarm.pause();
+  criticalAlarm.currentTime = 0;
+  criticalAlarm.loop = false; // Stop looping
+}
 warningLoop.addEventListener("ended", () => {
   //alphaText = 1.0;
   console.log(alphaText);
