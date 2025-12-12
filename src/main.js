@@ -496,6 +496,7 @@ function terminate() {
     canvas3.height / 2
   );
 }
+/*
 
 const WARNING_LOOP_OFFSET = 0.2; // seconds before end to restart
 const CRITICAL_LOOP_OFFSET = 0.1; // seconds before end to restart
@@ -588,7 +589,8 @@ function stopAllSounds() {
     criticalLoopInterval = null;
   }
 }
-/*
+  */
+
 function playWarningSound() {
   alphaText = 1.0;
   // Stop critical alarm if playing
@@ -598,7 +600,7 @@ function playWarningSound() {
   // Only play if not already playing
   if (warningLoop.paused) {
     warningLoop.currentTime = 0;
-    warningLoop.loop = true; // Restore default looping
+    //warningLoop.loop = true; // Restore default looping
     warningLoop.play();
   }
 }
@@ -613,7 +615,7 @@ function playCriticalSound() {
   // Only play if not already playing
   if (criticalAlarm.paused) {
     criticalAlarm.currentTime = 0;
-    criticalAlarm.loop = true; // Restore default looping
+    //criticalAlarm.loop = true; // Restore default looping
     criticalAlarm.play();
   }
 }
@@ -628,13 +630,10 @@ function stopAllSounds() {
 }
 warningLoop.addEventListener("ended", () => {
   //alphaText = 1.0;
-  console.log(alphaText);
   playWarningSound();
 });
 
 criticalAlarm.addEventListener("ended", () => {
   //alphaText = 1.0;
-  console.log(alphaText);
   playCriticalSound();
 });
-*/
