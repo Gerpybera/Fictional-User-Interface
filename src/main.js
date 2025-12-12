@@ -454,7 +454,7 @@ function drawWarning(level) {
   ctx3.textAlign = "center";
   ctx3.textBaseline = "middle";
   ctx3.fillText(text, canvas3.width / 2, canvas3.height / 2);
-  alphaText -= 0.005;
+  alphaText -= 0.01;
   if (alphaText < 0) alphaText = 0;
   console.log(alphaText);
   requestAnimationFrame(() => drawWarning(level));
