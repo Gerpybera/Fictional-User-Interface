@@ -53,16 +53,21 @@ function CreateMainMenu() {
   canvas2.height = window.innerHeight;
   document.body.appendChild(canvas2);
   ctx2 = canvas2.getContext("2d");
-
+  setInterval(() => {
+    switchColor = !switchColor;
+  }, 500);
+  drawMainMenu();
+}
+function drawMainMenu() {
   ctx2.fillStyle = "black";
   ctx2.fillRect(0, 0, canvas2.width, canvas2.height);
 
   let titleSizeX = canvas2.width * 0.8;
   let titleSizeY = canvas2.height * 0.4;
   let fontColor = "white";
-  let titleFontSize = Math.min(canvas2.width, canvas2.height) * 0.09;
+  let titleFontSize = Math.min(canvas2.width, canvas2.height) * 0.08;
 
-  ctx2.fillStyle = "green";
+  ctx2.fillStyle = switchColor ? "green" : "red";
   ctx2.fillRect(
     canvas2.width / 2 - titleSizeX / 2,
     canvas2.height / 2 - titleSizeY / 2,
@@ -77,24 +82,7 @@ function CreateMainMenu() {
     canvas2.width / 2,
     canvas2.height / 2 + titleFontSize / 4
   );
-  setInterval(() => {
-    ctx2.fillStyle = switchColor ? "green" : "red";
-    ctx2.fillRect(
-      canvas2.width / 2 - titleSizeX / 2,
-      canvas2.height / 2 - titleSizeY / 2,
-      titleSizeX,
-      titleSizeY
-    );
-    ctx2.font = `${titleFontSize}px Arial`;
-    ctx2.fillStyle = fontColor;
-    ctx2.textAlign = "center";
-    ctx2.fillText(
-      "LIFE FUNCTIONS SIMULATION",
-      canvas2.width / 2,
-      canvas2.height / 2 + titleFontSize / 4
-    );
-    switchColor = !switchColor;
-  }, 500);
+
   let buttonWidth = canvas2.width * 0.15;
   let buttonHeight = canvas2.height * 0.1;
   createButton(
@@ -103,6 +91,7 @@ function CreateMainMenu() {
     buttonWidth,
     buttonHeight
   );
+  requestAnimationFrame(drawMainMenu);
 }
 function createButton(x, y, width, height) {
   ctx2.strokeStyle = "white";
