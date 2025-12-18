@@ -29,6 +29,7 @@ const criticalAlarm = new Audio("life-functions-critical.wav");
 criticalAlarm.preload = "auto";
 
 // Health bar configuration data
+/*
 const healthConfigs = [
   { color: "cyan", textUp: "CARDIO", textUn: "VASCULAR" },
   { color: "green", textUp: "METABOLIC", textUn: "LEVELS" },
@@ -36,6 +37,15 @@ const healthConfigs = [
   { color: "CornflowerBlue", textUp: "PULMONARY", textUn: "FUNCTION" },
   { color: "green", textUp: "SYSTEM", textUn: "INTEGRATION" },
   { color: "Olive", textUp: "LOCOMOTOR", textUn: "SYSTEM" },
+];
+*/
+const healthConfigs = [
+  { color: "#2B97A4", textUp: "CARDIO", textUn: "VASCULAR" },
+  { color: "#1D6E2C", textUp: "METABOLIC", textUn: "LEVELS" },
+  { color: "#2FA783", textUp: "CENTRAL", textUn: "NERV. SYSTEM" },
+  { color: "#5584B1", textUp: "PULMONARY", textUn: "FUNCTION" },
+  { color: "#47ACCA", textUp: "SYSTEM", textUn: "INTEGRATION" },
+  { color: "#3D4523", textUp: "LOCOMOTOR", textUn: "SYSTEM" },
 ];
 
 window.onload = () => {
@@ -67,42 +77,24 @@ function drawMainMenu() {
   let fontColor = "white";
   let titleFontSize = Math.min(canvas2.width, canvas2.height) * 0.08;
 
-  ctx2.fillStyle = switchColor ? "green" : "red";
-  ctx2.fillRect(
+  createButton(
     canvas2.width / 2 - titleSizeX / 2,
     canvas2.height / 2 - titleSizeY / 2,
     titleSizeX,
     titleSizeY
   );
-  ctx2.font = `bold ${titleFontSize}px Arial`;
-  ctx2.fillStyle = fontColor;
-  ctx2.textAlign = "center";
-  ctx2.fillText(
-    "LIFE FUNCTIONS SIMULATION",
-    canvas2.width / 2,
-    canvas2.height / 2 + titleFontSize / 4
-  );
-
-  let buttonWidth = canvas2.width * 0.15;
-  let buttonHeight = canvas2.height * 0.1;
-  createButton(
-    canvas2.width / 2 - buttonWidth / 2,
-    canvas2.height * 0.8 - buttonHeight / 2,
-    buttonWidth,
-    buttonHeight
-  );
   requestAnimationFrame(drawMainMenu);
 }
 function createButton(x, y, width, height) {
-  ctx2.strokeStyle = "white";
+  ctx2.fillStyle = switchColor ? "green" : "#A00012";
   ctx2.lineWidth = 5;
 
-  ctx2.strokeRect(x, y, width, height);
-  ctx2.font = `${Math.min(width, height) * 0.4}px Arial`;
+  ctx2.fillRect(x, y, width, height);
+  ctx2.font = `${Math.min(canvas2.width, canvas2.height) * 0.08}px Arial`;
   ctx2.fillStyle = "white";
   ctx2.textAlign = "center";
   ctx2.textBaseline = "middle";
-  ctx2.fillText("START", x + width / 2, y + height / 2);
+  ctx2.fillText("LIFE FUNCTION SIMULATION", x + width / 2, y + height / 2);
 
   // Handle button press (shared logic)
   function handleButtonPress(clientX, clientY) {
@@ -241,7 +233,7 @@ function draw() {
 function background(color) {
   const canvas = document.getElementById("canvas");
   const ctx = canvas.getContext("2d");
-  ctx.fillStyle = color || "red";
+  ctx.fillStyle = color || "#A00012";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 

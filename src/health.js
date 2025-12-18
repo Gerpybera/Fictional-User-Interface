@@ -58,7 +58,7 @@ export default class Health {
   }
   backgroundSet(color) {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.ctx.fillStyle = color || "red";
+    this.ctx.fillStyle = color || "#A00012";
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
@@ -132,7 +132,7 @@ export default class Health {
       for (let j = 0; j < numY; j++) {
         this.ctx.strokeStyle = `rgba(` + this.hexToRgb(this.color) + `, 0.3)`;
         this.ctx.strokeRect(x + i * size, y + j * size, size, size);
-        //this.ctx.fillStyle = "red";
+        //this.ctx.fillStyle = "#A00012";
         //this.ctx.fillRect(x + i * size, y + j * size, size, size);
       }
     }
@@ -189,7 +189,7 @@ export default class Health {
     this.amplitude = 40;
   }
   dangerState() {
-    this.color = "red";
+    this.color = "#A00012";
     this.amplitude = 0;
   }
   js;
