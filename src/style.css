@@ -14,3 +14,17 @@ body, html {
     /* PWA: Safe area for notched devices */
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
+
+@font-face {
+  font-family: 'Eurostile_Cond_Heavy';
+  src: url('../public/font/fonnts.com-Eurostile_Cond_Heavy.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Eurostile_Bold';
+  src: url('../public/font/fonnts.com-Eurostile_Bold.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}

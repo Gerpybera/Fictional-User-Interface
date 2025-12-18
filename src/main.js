@@ -90,7 +90,9 @@ function createButton(x, y, width, height) {
   ctx2.lineWidth = 5;
 
   ctx2.fillRect(x, y, width, height);
-  ctx2.font = `${Math.min(canvas2.width, canvas2.height) * 0.08}px Arial`;
+  ctx2.font = `${
+    Math.min(canvas2.width, canvas2.height) * 0.08
+  }px Eurostile_Cond_Heavy`;
   ctx2.fillStyle = "white";
   ctx2.textAlign = "center";
   ctx2.textBaseline = "middle";
@@ -426,12 +428,12 @@ function drawWarning(level) {
   // Different colors and text based on warning level
   let bgColor, text;
   if (level === "critical") {
-    bgColor = "rgba(255, 174, 0, 1)"; // Purple for critical
+    bgColor = "#AB4717"; // Purple for critical
     text = "LIFE FUNCTIONS CRITICAL";
     isInWarningMode = false;
     isInCriticalMode = true;
   } else {
-    bgColor = "rgba(255, 0, 0, 1)"; // Red for warning
+    bgColor = "#A00012"; // Red for warning
     text = "COMPUTER MALFUNCTION";
     isInWarningMode = true;
     isInCriticalMode = false;
@@ -442,7 +444,7 @@ function drawWarning(level) {
 
   // Add warning text
   const fontSize = Math.min(canvas3.width, canvas3.height) * 0.09;
-  ctx3.font = `bold ${fontSize}px Arial`;
+  ctx3.font = `bold ${fontSize}px Eurostile_Cond_Heavy`;
   ctx3.fillStyle = `rgba(255, 255, 255, ${alphaText})`;
   //ctx3.fillStyle = `white`;
   ctx3.textAlign = "center";
@@ -478,7 +480,7 @@ function terminate() {
   ctx3.fillStyle = "rgba(255, 0, 0, 1)";
   ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
   const fontSize = Math.min(canvas3.width, canvas3.height) * 0.09;
-  ctx3.font = `bold ${fontSize}px Arial`;
+  ctx3.font = `bold ${fontSize}px Eurostile_Cond_Heavy`;
   ctx3.fillStyle = "white";
   ctx3.textAlign = "center";
   ctx3.textBaseline = "middle";

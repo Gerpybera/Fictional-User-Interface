@@ -118,7 +118,7 @@ export default class Health {
     this.ctx.fillStyle = "white";
     // Responsive font size based on panel height
     const fontSize = Math.max(this.height * 0.25, 12); // 25% of height, minimum 12px
-    this.ctx.font = `bold ${fontSize}px Arial`;
+    this.ctx.font = `${fontSize}px Eurostile_Bold`;
 
     // Responsive text positioning
     const paddingX = this.width * 0.1;
