@@ -23,7 +23,7 @@ export default class Health {
     this.index = index;
     this.setup();
 
-    console.log(this.width / 2 + (this.height / 4) * 5);
+    //console.log(this.width / 2 + (this.height / 4) * 5);
   }
   setup() {
     this.draw();
