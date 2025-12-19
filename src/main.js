@@ -171,6 +171,10 @@ function createButton(x, y, width, height) {
     }
   });
 }
+//Create Interaction System before Initialize Health Bars
+function lol() {
+  //placeholder
+}
 
 //Creating Health Bars
 
@@ -479,13 +483,15 @@ function drawWarning(level) {
   ctx3.font = `bold ${fontSize}px Eurostile_Cond_Heavy`;
   ctx3.textAlign = "center";
 
-  // --- GLOW FLICKER ---
-  const t = performance.now() / 200; // speed
-  const flicker = 0.6 + 0.4 * Math.sin(t); // 0.2–1.0
-  const glowBase = 35; // base blur
-  const glow = glowBase * flicker;
+  // --- GLOW FLICKER tied to alphaText ---
+  const t = performance.now() / 200;
+  const flicker = 0.6 + 0.4 * Math.sin(t);
 
-  ctx3.shadowColor = "rgba(255, 255, 255, 0.9)";
+  const glowBase = 35;
+  const glow = glowBase * flicker * alphaText; // fade glow with text
+
+  // shadow alpha also tied to alphaText
+  ctx3.shadowColor = `rgba(255, 255, 255, ${0.9 * alphaText})`;
   ctx3.shadowBlur = glow;
   ctx3.shadowOffsetX = 0;
   ctx3.shadowOffsetY = 0;
@@ -502,13 +508,17 @@ function drawWarning(level) {
   ctx3.textBaseline = "top";
   ctx3.fillText(line2, centerX, centerY + lineSpacing / 2);
 
-  // optional reset if other drawing uses ctx3 later
-  // ctx3.shadowBlur = 0;
+  // reset shadow so it doesn't affect other draws
+  ctx3.shadowBlur = 0;
+  ctx3.shadowColor = "rgba(0,0,0,0)";
 
   alphaText -= 0.01;
   if (alphaText < 0) alphaText = 0;
 
-  requestAnimationFrame(() => drawWarning(level));
+  // stop when fully transparent to avoid extra frames/ghosting
+  if (alphaText > 0) {
+    requestAnimationFrame(() => drawWarning(level));
+  }
 }
 
 function terminate() {
