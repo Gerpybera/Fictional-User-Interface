@@ -22,6 +22,9 @@ let terminated = false; // Permanent termination state
 let alphaText = 1.0; // For fade effects
 let warningAnimating = false;
 
+//variable to manage glowing effect
+const glowBase = 10;
+
 //Audio parts
 
 const warningLoop = new Audio("computer-malfunction.wav");
@@ -105,7 +108,7 @@ function createButton(x, y, width, height) {
   // --- GLOW SETUP (static or animated if called in a loop) ---
   const t = performance.now() / 200; // adjust for speed
   const flicker = 0.6 + 0.4 * Math.sin(t); // 0.2–1.0
-  const glowBase = 25;
+  //const glowBase = 25;
   const glow = glowBase * flicker;
 
   ctx2.shadowColor = "rgba(255, 255, 255, 0.9)";
@@ -491,7 +494,7 @@ function drawWarning(level) {
   const t = performance.now() / 200;
   const flicker = 0.6 + 0.4 * Math.sin(t);
 
-  const glowBase = 35;
+  //const glowBase = 35;
   const glow = glowBase * flicker * alphaText;
 
   ctx3.shadowColor = `rgba(255, 255, 255, ${0.9 * alphaText})`;
@@ -557,7 +560,7 @@ function terminate() {
     // --- GLOW FLICKER ---
     const t = performance.now() / 200;
     const flicker = 0.6 + 0.4 * Math.sin(t);
-    const glowBase = 35;
+    //const glowBase = 35;
     const glow = glowBase * flicker;
 
     ctx3.shadowColor = "rgba(255, 255, 255, 0.9)";
