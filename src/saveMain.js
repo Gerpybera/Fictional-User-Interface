@@ -23,7 +23,6 @@ let terminated = false; // Permanent termination state
 
 let alphaText = 1.0; // For fade effects
 let warningAnimating = false;
-let currentWarningLevel = null; // "warning" | "critical" | null
 
 //variable to manage glowing effect
 const glowBase = 10;
@@ -60,7 +59,12 @@ window.onload = () => {
   if (!criticalAlarm.readyState || !warningLoop.readyState) return;
   CreateMainMenu();
 };
-//Create Main Menu
+//Create Main Meun
+
+function setBlurEffect(canvas, amount) {
+  canvas.style.filter = `blur(${amount}px)`;
+}
+
 let switchColor = false;
 
 function CreateMainMenu() {
@@ -414,49 +418,37 @@ function checkDangerCondition() {
 }
 
 function showWarning(level) {
-  if (terminated) return;
-
+  if (terminated) return; // Do not show warnings if terminated
   const dangerCount2 = healths.filter((health) => health.isDanger).length;
+  if (warningActive) return; // Prevent multiple warnings
 
-  // always update the current level
-  currentWarningLevel = level;
-
-  // if no canvas yet, create it
-  if (!canvas3) {
-    canvas3 = document.createElement("canvas");
-    canvas3.id = "canvas3";
-    canvas3.width = window.innerWidth;
-    canvas3.height = window.innerHeight;
-    canvas3.style.position = "absolute";
-    canvas3.style.top = "0";
-    canvas3.style.left = "0";
-    canvas3.style.pointerEvents = "none";
-    document.body.appendChild(canvas3);
-    ctx3 = canvas3.getContext("2d");
-  }
-
-  // pause bars and enter warning state
+  //alphaText = getDecreaseAlpha();
   warningActive = true;
-  isPaused = true;
+  isPaused = true; // Pause health bar progression
   healths.forEach((h) => h.pauseDanger());
+  canvas3 = document.createElement("canvas");
+  canvas3.id = "canvas3";
+  canvas3.width = window.innerWidth;
+  canvas3.height = window.innerHeight;
+  canvas3.style.position = "absolute";
+  canvas3.style.top = "0";
+  canvas3.style.left = "0";
+  canvas3.style.pointerEvents = "none"; // Allow clicks to pass through
+  //setBlurEffect(canvas2, 2);
+  //canvas3.style.filter = "blur(2px)"; // Add blur effect
+  document.body.appendChild(canvas3);
+  ctx3 = canvas3.getContext("2d");
 
-  // reset alpha every time a warning is triggered
-  alphaText = 1.0;
-
-  // auto-remove after 3s (overlay only)
+  // Remove warning after 3 seconds
   setTimeout(() => {
     if (canvas3 && canvas3.parentNode) {
       document.body.removeChild(canvas3);
-      canvas3 = null;
-      ctx3 = null;
     }
     warningActive = false;
-    isPaused = false;
+    isPaused = false; // Resume health bar progression
     healths.forEach((h) => h.resumeDanger());
-    currentWarningLevel = null;
   }, 3000);
 
-  // sounds
   if (level === "warning") {
     playWarningSound();
   } else if (level === "critical") {
@@ -467,33 +459,16 @@ function showWarning(level) {
   if (dangerCount2 < 2) {
     stopAllSounds();
   }
-
-  // always (re)start animation; do not guard with warningAnimating
-  drawWarning();
+  drawWarning(level);
 }
-
 let isInWarningMode = false;
 let isInCriticalMode = false;
 
-// call this instead of showWarning("warning") directly
-function triggerWarning(level) {
+function drawWarning(level) {
   if (terminated) return;
-  currentWarningLevel = level;
-  warningActive = true;
-  alphaText = 1.0;
 
-  // start fade if not already running
-  if (!warningAnimating) {
-    warningAnimating = true;
-    drawWarning();
-  }
-}
-
-function drawWarning() {
-  if (terminated || !warningActive || !ctx3 || !canvas3) return;
-
-  let level = currentWarningLevel;
-  if (!level) return; // nothing to draw
+  // start guard
+  warningAnimating = true;
 
   let bgColor, line1, line2;
 
@@ -520,6 +495,8 @@ function drawWarning() {
 
   const t = performance.now() / 200;
   const flicker = 0.6 + 0.4 * Math.sin(t);
+
+  //const glowBase = 35;
   const glow = glowBase * flicker * alphaText;
 
   ctx3.shadowColor = `rgba(255, 255, 255, ${0.9 * alphaText})`;
@@ -545,8 +522,10 @@ function drawWarning() {
   alphaText -= 0.01;
   if (alphaText < 0) alphaText = 0;
 
-  if (alphaText > 0 && warningActive) {
-    requestAnimationFrame(drawWarning);
+  if (alphaText > 0 && warningAnimating) {
+    requestAnimationFrame(() => drawWarning(level));
+  } else {
+    warningAnimating = false; // finished
   }
 }
 
@@ -706,19 +685,35 @@ function stopAllSounds() {
   */
 
 function playWarningSound() {
+  alphaText = 1.0;
+
   criticalAlarm.pause();
   criticalAlarm.currentTime = 0;
 
-  warningLoop.currentTime = 0;
-  warningLoop.play();
+  if (warningLoop.paused) {
+    warningLoop.currentTime = 0;
+    warningLoop.play();
+  }
+
+  if (!warningAnimating) {
+    drawWarning("warning"); // or your non-critical level string
+  }
 }
 
 function playCriticalSound() {
   warningLoop.pause();
   warningLoop.currentTime = 0;
 
-  criticalAlarm.currentTime = 0;
-  criticalAlarm.play();
+  alphaText = 1.0;
+
+  if (criticalAlarm.paused) {
+    criticalAlarm.currentTime = 0;
+    criticalAlarm.play();
+  }
+
+  if (!warningAnimating) {
+    drawWarning("critical");
+  }
 }
 
 function stopAllSounds() {
@@ -730,21 +725,11 @@ function stopAllSounds() {
   criticalAlarm.loop = false; // Stop looping
 }
 warningLoop.addEventListener("ended", () => {
-  if (isInWarningMode && !terminated) {
-    playWarningSound();
-  }
-  if (!terminated && warningActive && currentWarningLevel === "warning") {
-    alphaText = 1.0;
-    drawWarning();
-  }
+  //alphaText = 1.0;
+  playWarningSound();
 });
 
 criticalAlarm.addEventListener("ended", () => {
-  if (isInCriticalMode && !terminated) {
-    playCriticalSound();
-  }
-  if (!terminated && warningActive && currentWarningLevel === "critical") {
-    alphaText = 1.0;
-    drawWarning();
-  }
+  //alphaText = 1.0;
+  playCriticalSound();
 });
