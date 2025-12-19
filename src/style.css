@@ -13,6 +13,7 @@ body, html {
     -webkit-tap-highlight-color: transparent;
     /* PWA: Safe area for notched devices */
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    filter: blur(0.5px);
 }
 
 @font-face {

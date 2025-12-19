@@ -115,17 +115,31 @@ export default class Health {
     this.textPannelName(x, y, this.text);
   }
   textPannelName(x, y, text) {
+    const t = performance.now() / 200; // change 200 to adjust speed
+    const flicker = 0.6 + 0.4 * Math.sin(t); // 0.2–1.0 range
+
+    const glowBase = 15; // base blur
+    const glow = glowBase * flicker;
+
+    this.ctx.shadowColor = "rgba(0, 255, 255, 0.9)";
+    this.ctx.shadowBlur = glow;
+    this.ctx.shadowOffsetX = 0;
+    this.ctx.shadowOffsetY = 0;
+
     this.ctx.fillStyle = "white";
-    // Responsive font size based on panel height
-    const fontSize = Math.max(this.height * 0.25, 12); // 25% of height, minimum 12px
+    const fontSize = Math.max(this.height * 0.25, 12);
     this.ctx.font = `${fontSize}px Eurostile_Bold`;
 
-    // Responsive text positioning
     const paddingX = this.width * 0.1;
     const lineHeight = this.height * 0.35;
+
     this.ctx.fillText(this.textUpper, x + paddingX, y + lineHeight);
     this.ctx.fillText(this.textUnder, x + paddingX, y + lineHeight * 2);
+
+    // Optional: reset shadow so other drawings are not affected
+    this.ctx.shadowBlur = 0;
   }
+
   gridSquare(x, y, size, numX, numY) {
     this.ctx.lineWidth = 1;
     for (let i = 0; i < numX; i++) {

@@ -2,7 +2,6 @@ import Health from "./health";
 
 let ctx; // Declare ctx in global scope
 let canvas;
-let healths = []; // Store health instances
 
 let ctx2;
 let canvas2;
@@ -10,6 +9,7 @@ let canvas2;
 let ctx3;
 let canvas3;
 
+let healths = []; // Store health instances
 let isButtonPressed = false;
 let warningActive = false; // Track if warning is currently showing
 let hasWarningShown = false; // Track if warning has been shown before
@@ -54,6 +54,10 @@ window.onload = () => {
 };
 //Create Main Meun
 
+function setBlurEffect(canvas, amount) {
+  canvas.style.filter = `blur(${amount}px)`;
+}
+
 let switchColor = false;
 
 function CreateMainMenu() {
@@ -61,6 +65,7 @@ function CreateMainMenu() {
   canvas2.id = "canvas2";
   canvas2.width = window.innerWidth;
   canvas2.height = window.innerHeight;
+  //setBlurEffect(canvas2, 0.5);
   document.body.appendChild(canvas2);
   ctx2 = canvas2.getContext("2d");
   setInterval(() => {
@@ -88,17 +93,42 @@ function drawMainMenu() {
 function createButton(x, y, width, height) {
   ctx2.fillStyle = switchColor ? "green" : "#A00012";
   ctx2.lineWidth = 5;
-
   ctx2.fillRect(x, y, width, height);
-  ctx2.font = `${
-    Math.min(canvas2.width, canvas2.height) * 0.08
-  }px Eurostile_Cond_Heavy`;
-  ctx2.fillStyle = "white";
+
+  const fontSize = Math.min(canvas2.width, canvas2.height) * 0.08;
+  ctx2.font = `${fontSize}px Eurostile_Cond_Heavy`;
   ctx2.textAlign = "center";
   ctx2.textBaseline = "middle";
-  ctx2.fillText("LIFE FUNCTION SIMULATION", x + width / 2, y + height / 2);
 
-  // Handle button press (shared logic)
+  // --- GLOW SETUP (static or animated if called in a loop) ---
+  const t = performance.now() / 200; // adjust for speed
+  const flicker = 0.6 + 0.4 * Math.sin(t); // 0.2–1.0
+  const glowBase = 25;
+  const glow = glowBase * flicker;
+
+  ctx2.shadowColor = "rgba(255, 255, 255, 0.9)";
+  ctx2.shadowBlur = glow;
+  ctx2.shadowOffsetX = 0;
+  ctx2.shadowOffsetY = 0;
+
+  ctx2.fillStyle = "white";
+
+  const centerX = x + width / 2;
+  const centerY = y + height / 2;
+  const lineSpacing = fontSize * 0.7; // distance between lines
+
+  // Top line: LIFE FUNCTION
+  ctx2.textBaseline = "bottom";
+  ctx2.fillText("LIFE FUNCTION", centerX, centerY - lineSpacing / 2);
+
+  // Bottom line: SIMULATION
+  ctx2.textBaseline = "top";
+  ctx2.fillText("SIMULATION", centerX, centerY + lineSpacing / 2);
+
+  // Optional: reset shadow if you draw other things later with ctx2
+  ctx2.shadowBlur = 0;
+
+  // Button press handling stays the same
   function handleButtonPress(clientX, clientY) {
     if (
       clientX >= x &&
@@ -106,7 +136,6 @@ function createButton(x, y, width, height) {
       clientY >= y &&
       clientY <= y + height
     ) {
-      // Unlock audio for iOS/iPad
       warningLoop.muted = true;
       warningLoop
         .play()
@@ -115,6 +144,7 @@ function createButton(x, y, width, height) {
           warningLoop.muted = false;
         })
         .catch((e) => console.warn("Warning audio unlock failed", e));
+
       criticalAlarm.muted = true;
       criticalAlarm
         .play()
@@ -130,12 +160,10 @@ function createButton(x, y, width, height) {
     }
   }
 
-  // Mouse click (desktop)
   canvas2.addEventListener("mousedown", (e) => {
     handleButtonPress(e.clientX, e.clientY);
   });
 
-  // Touch (mobile/tablet)
   canvas2.addEventListener("touchend", (e) => {
     if (e.changedTouches.length > 0) {
       const touch = e.changedTouches[0];
@@ -395,6 +423,8 @@ function showWarning(level) {
   canvas3.style.top = "0";
   canvas3.style.left = "0";
   canvas3.style.pointerEvents = "none"; // Allow clicks to pass through
+  //setBlurEffect(canvas2, 2);
+  //canvas3.style.filter = "blur(2px)"; // Add blur effect
   document.body.appendChild(canvas3);
   ctx3 = canvas3.getContext("2d");
 
@@ -425,16 +455,19 @@ let isInCriticalMode = false;
 
 function drawWarning(level) {
   if (terminated) return; // Do not draw warnings if terminated
-  // Different colors and text based on warning level
-  let bgColor, text;
+
+  let bgColor, line1, line2;
+
   if (level === "critical") {
-    bgColor = "#AB4717"; // Purple for critical
-    text = "LIFE FUNCTIONS CRITICAL";
+    bgColor = "#AB4717";
+    line1 = "LIFE FUNCTIONS";
+    line2 = "CRITICAL";
     isInWarningMode = false;
     isInCriticalMode = true;
   } else {
-    bgColor = "#A00012"; // Red for warning
-    text = "COMPUTER MALFUNCTION";
+    bgColor = "#A00012";
+    line1 = "COMPUTER";
+    line2 = "MALFUNCTION";
     isInWarningMode = true;
     isInCriticalMode = false;
   }
@@ -442,14 +475,36 @@ function drawWarning(level) {
   ctx3.fillStyle = bgColor;
   ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
 
-  // Add warning text
-  const fontSize = Math.min(canvas3.width, canvas3.height) * 0.09;
+  const fontSize = Math.min(canvas3.width, canvas3.height) * 0.3;
   ctx3.font = `bold ${fontSize}px Eurostile_Cond_Heavy`;
-  ctx3.fillStyle = `rgba(255, 255, 255, ${alphaText})`;
-  //ctx3.fillStyle = `white`;
   ctx3.textAlign = "center";
-  ctx3.textBaseline = "middle";
-  ctx3.fillText(text, canvas3.width / 2, canvas3.height / 2);
+
+  // --- GLOW FLICKER ---
+  const t = performance.now() / 200; // speed
+  const flicker = 0.6 + 0.4 * Math.sin(t); // 0.2–1.0
+  const glowBase = 35; // base blur
+  const glow = glowBase * flicker;
+
+  ctx3.shadowColor = "rgba(255, 255, 255, 0.9)";
+  ctx3.shadowBlur = glow;
+  ctx3.shadowOffsetX = 0;
+  ctx3.shadowOffsetY = 0;
+
+  ctx3.fillStyle = `rgba(255, 255, 255, ${alphaText})`;
+
+  const centerX = canvas3.width / 2;
+  const centerY = canvas3.height / 2;
+  const lineSpacing = fontSize * 0.1;
+
+  ctx3.textBaseline = "bottom";
+  ctx3.fillText(line1, centerX, centerY - lineSpacing / 2);
+
+  ctx3.textBaseline = "top";
+  ctx3.fillText(line2, centerX, centerY + lineSpacing / 2);
+
+  // optional reset if other drawing uses ctx3 later
+  // ctx3.shadowBlur = 0;
+
   alphaText -= 0.01;
   if (alphaText < 0) alphaText = 0;
 
@@ -460,13 +515,12 @@ function terminate() {
   terminated = true;
   isPaused = true;
   warningActive = true;
-  // Pause danger timers on each health
+
   healths.forEach((h) => {
     if (typeof h.pauseDanger === "function") h.pauseDanger();
   });
   stopAllSounds();
 
-  // Create permanent canvas3 overlay that blocks interactions
   canvas3 = document.createElement("canvas");
   canvas3.id = "canvas3";
   canvas3.width = window.innerWidth;
@@ -474,22 +528,49 @@ function terminate() {
   canvas3.style.position = "absolute";
   canvas3.style.top = "0";
   canvas3.style.left = "0";
-  canvas3.style.pointerEvents = "auto"; // Block interactions
+  canvas3.style.pointerEvents = "auto";
   document.body.appendChild(canvas3);
+
   ctx3 = canvas3.getContext("2d");
-  ctx3.fillStyle = "rgba(255, 0, 0, 1)";
-  ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
-  const fontSize = Math.min(canvas3.width, canvas3.height) * 0.09;
-  ctx3.font = `bold ${fontSize}px Eurostile_Cond_Heavy`;
-  ctx3.fillStyle = "white";
-  ctx3.textAlign = "center";
-  ctx3.textBaseline = "middle";
-  ctx3.fillText(
-    "LIFE FUNCTIONS TERMINATED",
-    canvas3.width / 2,
-    canvas3.height / 2
-  );
+
+  function renderTerminate() {
+    ctx3.fillStyle = "#A00012";
+    ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
+
+    const fontSize = Math.min(canvas3.width, canvas3.height) * 0.3;
+    ctx3.font = `bold ${fontSize}px Eurostile_Cond_Heavy`;
+    ctx3.textAlign = "center";
+
+    // --- GLOW FLICKER ---
+    const t = performance.now() / 200;
+    const flicker = 0.6 + 0.4 * Math.sin(t);
+    const glowBase = 35;
+    const glow = glowBase * flicker;
+
+    ctx3.shadowColor = "rgba(255, 255, 255, 0.9)";
+    ctx3.shadowBlur = glow;
+    ctx3.shadowOffsetX = 0;
+    ctx3.shadowOffsetY = 0;
+
+    ctx3.fillStyle = "white";
+
+    const centerX = canvas3.width / 2;
+    const centerY = canvas3.height / 2;
+    const lineSpacing = fontSize * 0.1;
+
+    ctx3.textBaseline = "bottom";
+    ctx3.fillText("LIFE FUNCTIONS", centerX, centerY - lineSpacing / 2);
+
+    ctx3.textBaseline = "top";
+    ctx3.fillText("TERMINATED", centerX, centerY + lineSpacing / 2);
+
+    // keep animating while terminated
+    if (terminated) requestAnimationFrame(renderTerminate);
+  }
+
+  renderTerminate();
 }
+
 /*
 
 const WARNING_LOOP_OFFSET = 0.2; // seconds before end to restart
