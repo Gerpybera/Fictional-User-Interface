@@ -20,6 +20,8 @@ let terminationTimer = null; // Timer when all healths are in danger
 let terminated = false; // Permanent termination state
 
 let alphaText = 1.0; // For fade effects
+let warningAnimating = false;
+
 //Audio parts
 
 const warningLoop = new Audio("computer-malfunction.wav");
@@ -458,7 +460,10 @@ let isInWarningMode = false;
 let isInCriticalMode = false;
 
 function drawWarning(level) {
-  if (terminated) return; // Do not draw warnings if terminated
+  if (terminated) return;
+
+  // start guard
+  warningAnimating = true;
 
   let bgColor, line1, line2;
 
@@ -483,14 +488,12 @@ function drawWarning(level) {
   ctx3.font = `bold ${fontSize}px Eurostile_Cond_Heavy`;
   ctx3.textAlign = "center";
 
-  // --- GLOW FLICKER tied to alphaText ---
   const t = performance.now() / 200;
   const flicker = 0.6 + 0.4 * Math.sin(t);
 
   const glowBase = 35;
-  const glow = glowBase * flicker * alphaText; // fade glow with text
+  const glow = glowBase * flicker * alphaText;
 
-  // shadow alpha also tied to alphaText
   ctx3.shadowColor = `rgba(255, 255, 255, ${0.9 * alphaText})`;
   ctx3.shadowBlur = glow;
   ctx3.shadowOffsetX = 0;
@@ -508,16 +511,16 @@ function drawWarning(level) {
   ctx3.textBaseline = "top";
   ctx3.fillText(line2, centerX, centerY + lineSpacing / 2);
 
-  // reset shadow so it doesn't affect other draws
   ctx3.shadowBlur = 0;
   ctx3.shadowColor = "rgba(0,0,0,0)";
 
   alphaText -= 0.01;
   if (alphaText < 0) alphaText = 0;
 
-  // stop when fully transparent to avoid extra frames/ghosting
-  if (alphaText > 0) {
+  if (alphaText > 0 && warningAnimating) {
     requestAnimationFrame(() => drawWarning(level));
+  } else {
+    warningAnimating = false; // finished
   }
 }
 
@@ -678,30 +681,33 @@ function stopAllSounds() {
 
 function playWarningSound() {
   alphaText = 1.0;
-  // Stop critical alarm if playing
+
   criticalAlarm.pause();
   criticalAlarm.currentTime = 0;
 
-  // Only play if not already playing
   if (warningLoop.paused) {
     warningLoop.currentTime = 0;
-    //warningLoop.loop = true; // Restore default looping
     warningLoop.play();
+  }
+
+  if (!warningAnimating) {
+    drawWarning("warning"); // or your non-critical level string
   }
 }
 
 function playCriticalSound() {
-  // Stop warning loop if playing
   warningLoop.pause();
   warningLoop.currentTime = 0;
 
   alphaText = 1.0;
 
-  // Only play if not already playing
   if (criticalAlarm.paused) {
     criticalAlarm.currentTime = 0;
-    //criticalAlarm.loop = true; // Restore default looping
     criticalAlarm.play();
+  }
+
+  if (!warningAnimating) {
+    drawWarning("critical");
   }
 }
 
