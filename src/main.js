@@ -475,7 +475,7 @@ function drawWarning(level) {
   ctx3.fillStyle = bgColor;
   ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
 
-  const fontSize = Math.min(canvas3.width, canvas3.height) * 0.3;
+  const fontSize = Math.min(canvas3.width, canvas3.height) * 0.1;
   ctx3.font = `bold ${fontSize}px Eurostile_Cond_Heavy`;
   ctx3.textAlign = "center";
 
@@ -537,7 +537,7 @@ function terminate() {
     ctx3.fillStyle = "#A00012";
     ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
 
-    const fontSize = Math.min(canvas3.width, canvas3.height) * 0.3;
+    const fontSize = Math.min(canvas3.width, canvas3.height) * 0.1;
     ctx3.font = `bold ${fontSize}px Eurostile_Cond_Heavy`;
     ctx3.textAlign = "center";
 
