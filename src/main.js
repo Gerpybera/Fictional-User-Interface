@@ -80,8 +80,8 @@ function drawMainMenu() {
   ctx2.fillStyle = "black";
   ctx2.fillRect(0, 0, canvas2.width, canvas2.height);
 
-  let titleSizeX = canvas2.width * 0.8;
-  let titleSizeY = canvas2.height * 0.4;
+  let titleSizeX = canvas2.width;
+  let titleSizeY = canvas2.height;
   let fontColor = "white";
   let titleFontSize = Math.min(canvas2.width, canvas2.height) * 0.08;
 
@@ -550,6 +550,45 @@ function drawWarning() {
   }
 }
 
+function resetGameToMainMenu() {
+  // stop sounds
+  stopAllSounds();
+
+  // remove canvases if they exist
+  if (canvas && canvas.parentNode) {
+    document.body.removeChild(canvas);
+  }
+  if (canvas2 && canvas2.parentNode) {
+    document.body.removeChild(canvas2);
+  }
+  if (canvas3 && canvas3.parentNode) {
+    document.body.removeChild(canvas3);
+  }
+
+  // reset globals
+  healths = [];
+  isButtonPressed = false;
+  warningActive = false;
+  hasWarningShown = false;
+  hasCriticalShown = false;
+  lastDangerCount = 0;
+  isPaused = false;
+  terminationTimer = null;
+  terminated = false;
+  alphaText = 1.0;
+  warningAnimating = false;
+  currentWarningLevel = null;
+  isInWarningMode = false;
+  isInCriticalMode = false;
+
+  // reset contexts and canvases
+  ctx = ctx2 = ctx3 = null;
+  canvas = canvas2 = canvas3 = null;
+
+  // recreate main menu
+  CreateMainMenu();
+}
+
 function terminate() {
   terminated = true;
   isPaused = true;
@@ -567,10 +606,22 @@ function terminate() {
   canvas3.style.position = "absolute";
   canvas3.style.top = "0";
   canvas3.style.left = "0";
-  canvas3.style.pointerEvents = "auto";
+  canvas3.style.pointerEvents = "auto"; // important: allow clicks
   document.body.appendChild(canvas3);
 
   ctx3 = canvas3.getContext("2d");
+
+  // CLICK / TOUCH TO RESET BACK TO MAIN MENU
+  function handleResetClick() {
+    // prevent multiple calls
+    if (!terminated) return;
+    resetGameToMainMenu();
+  }
+  canvas3.addEventListener("click", handleResetClick);
+  canvas3.addEventListener("touchend", (e) => {
+    e.preventDefault();
+    handleResetClick();
+  });
 
   function renderTerminate() {
     ctx3.fillStyle = "#A00012";
@@ -580,10 +631,8 @@ function terminate() {
     ctx3.font = `bold ${fontSize}px Eurostile_Cond_Heavy`;
     ctx3.textAlign = "center";
 
-    // --- GLOW FLICKER ---
     const t = performance.now() / 200;
     const flicker = 0.6 + 0.4 * Math.sin(t);
-    //const glowBase = 35;
     const glow = glowBase * flicker;
 
     ctx3.shadowColor = "rgba(255, 255, 255, 0.9)";
@@ -603,7 +652,6 @@ function terminate() {
     ctx3.textBaseline = "top";
     ctx3.fillText("TERMINATED", centerX, centerY + lineSpacing / 2);
 
-    // keep animating while terminated
     if (terminated) requestAnimationFrame(renderTerminate);
   }
 
