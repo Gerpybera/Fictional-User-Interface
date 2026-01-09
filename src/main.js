@@ -15,7 +15,6 @@ let healths = []; // Store health instances
 let isButtonPressed = false;
 let warningActive = false; // Track if warning is currently showing
 let hasWarningShown = false; // Track if warning has been shown before
-let hasCriticalShown = false; // Track if critical warning has been shown before
 let lastDangerCount = 0; // Track previous danger count to detect changes
 let isPaused = false; // Track if health bars are paused
 let terminationTimer = null; // Timer when all healths are in danger
@@ -27,6 +26,13 @@ let currentWarningLevel = null; // "warning" | "critical" | null
 
 //variable to manage glowing effect
 const glowBase = 10;
+
+// Performance optimization variables
+let lastResizeTime = 0;
+const RESIZE_DEBOUNCE = 150; // ms
+let cachedGlowValue = glowBase;
+let glowUpdateCounter = 0;
+const GLOW_UPDATE_FREQUENCY = 3; // Update glow every N frames
 
 //Audio parts
 
@@ -62,16 +68,23 @@ window.onload = () => {
 };
 //Create Main Menu
 let switchColor = false;
+let mainMenuInterval = null; // Store interval ID to clear it later
 
 function CreateMainMenu() {
+  // Clear any existing interval to prevent stacking
+  if (mainMenuInterval) {
+    clearInterval(mainMenuInterval);
+    mainMenuInterval = null;
+  }
+
   canvas2 = document.createElement("canvas");
   canvas2.id = "canvas2";
   canvas2.width = window.innerWidth;
   canvas2.height = window.innerHeight;
-  //setBlurEffect(canvas2, 0.5);
+  canvas2.style.willChange = "transform"; // GPU acceleration hint
   document.body.appendChild(canvas2);
-  ctx2 = canvas2.getContext("2d");
-  setInterval(() => {
+  ctx2 = canvas2.getContext("2d", { alpha: false }); // Disable alpha for performance
+  mainMenuInterval = setInterval(() => {
     switchColor = !switchColor;
   }, 500);
   drawMainMenu();
@@ -98,19 +111,23 @@ function createButton(x, y, width, height) {
   ctx2.lineWidth = 5;
   ctx2.fillRect(x, y, width, height);
 
-  const fontSize = Math.min(canvas2.width, canvas2.height) * 0.08;
+  const fontSize = Math.min(canvas2.width, canvas2.height) * 0.2;
   ctx2.font = `${fontSize}px Eurostile_Cond_Heavy`;
   ctx2.textAlign = "center";
   ctx2.textBaseline = "middle";
 
-  // --- GLOW SETUP (static or animated if called in a loop) ---
-  const t = performance.now() / 200; // adjust for speed
-  const flicker = 0.6 + 0.4 * Math.sin(t); // 0.2–1.0
-  //const glowBase = 25;
-  const glow = glowBase * flicker;
+  // --- OPTIMIZED GLOW (update less frequently) ---
+  glowUpdateCounter++;
+  if (glowUpdateCounter >= GLOW_UPDATE_FREQUENCY) {
+    const t = performance.now() / 200;
+    const flicker = 0.6 + 0.4 * Math.sin(t);
+    cachedGlowValue = glowBase * flicker;
+    glowUpdateCounter = 0;
+  }
 
+  // Reduced shadow blur for better mobile performance
   ctx2.shadowColor = "rgba(255, 255, 255, 0.9)";
-  ctx2.shadowBlur = glow;
+  ctx2.shadowBlur = cachedGlowValue * 0.7; // Reduced intensity
   ctx2.shadowOffsetX = 0;
   ctx2.shadowOffsetY = 0;
 
@@ -184,14 +201,21 @@ function lol() {
 function InitializeHealth() {
   canvas = document.createElement("canvas");
   canvas.id = "canvas";
+  canvas.style.willChange = "transform"; // GPU acceleration hint
   document.body.appendChild(canvas);
-  ctx = canvas.getContext("2d");
+  ctx = canvas.getContext("2d", { alpha: false }); // Disable alpha for performance
 
   // Initial resize and create health bars
   resizeCanvas();
 
-  // Setup resize listener for responsiveness
-  window.addEventListener("resize", resizeCanvas);
+  // Setup resize listener with throttling for better performance
+  window.addEventListener("resize", () => {
+    const now = Date.now();
+    if (now - lastResizeTime > RESIZE_DEBOUNCE) {
+      lastResizeTime = now;
+      resizeCanvas();
+    }
+  });
 
   // Setup global event listeners
   setupEventListeners();
@@ -365,11 +389,11 @@ function checkDangerCondition() {
     dangerCount >= 4 &&
     !warningActive &&
     dangerCount !== lastDangerCount &&
-    !hasCriticalShown &&
+    !isShowingCriticalWarning &&
     !terminated
   ) {
     showWarning("critical");
-    hasCriticalShown = true;
+    isShowingCriticalWarning = true;
   }
   // Show warning when 2-4 are in danger
   else if (
@@ -389,8 +413,8 @@ function checkDangerCondition() {
     hasWarningShown = false; // Reset once danger count drops below 2
     stopAllSounds(); // Stop all sounds if no health is in danger
   }
-  if (dangerCount < 4) {
-    hasCriticalShown = false; // Reset once danger count drops below 4
+  if (dangerCount === 0) {
+    isShowingCriticalWarning = false; // Reset only when all healths are out of danger
   }
 
   // Termination logic: all healths in danger -> start 3s timer
@@ -431,8 +455,9 @@ function showWarning(level) {
     canvas3.style.top = "0";
     canvas3.style.left = "0";
     canvas3.style.pointerEvents = "none";
+    canvas3.style.willChange = "transform";
     document.body.appendChild(canvas3);
-    ctx3 = canvas3.getContext("2d");
+    ctx3 = canvas3.getContext("2d", { alpha: false });
   }
 
   // pause bars and enter warning state
@@ -474,6 +499,7 @@ function showWarning(level) {
 
 let isInWarningMode = false;
 let isInCriticalMode = false;
+let isShowingCriticalWarning = false;
 
 // call this instead of showWarning("warning") directly
 function triggerWarning(level) {
@@ -518,9 +544,15 @@ function drawWarning() {
   ctx3.font = `bold ${fontSize}px Eurostile_Cond_Heavy`;
   ctx3.textAlign = "center";
 
-  const t = performance.now() / 200;
-  const flicker = 0.6 + 0.4 * Math.sin(t);
-  const glow = glowBase * flicker * alphaText;
+  // Optimized glow calculation - update less frequently
+  glowUpdateCounter++;
+  if (glowUpdateCounter >= GLOW_UPDATE_FREQUENCY) {
+    const t = performance.now() / 200;
+    const flicker = 0.6 + 0.4 * Math.sin(t);
+    cachedGlowValue = glowBase * flicker;
+    glowUpdateCounter = 0;
+  }
+  const glow = cachedGlowValue * alphaText * 0.7; // Reduced for mobile
 
   ctx3.shadowColor = `rgba(255, 255, 255, ${0.9 * alphaText})`;
   ctx3.shadowBlur = glow;
@@ -554,6 +586,12 @@ function resetGameToMainMenu() {
   // stop sounds
   stopAllSounds();
 
+  // Clear main menu interval if it exists
+  if (mainMenuInterval) {
+    clearInterval(mainMenuInterval);
+    mainMenuInterval = null;
+  }
+
   // remove canvases if they exist
   if (canvas && canvas.parentNode) {
     document.body.removeChild(canvas);
@@ -570,7 +608,7 @@ function resetGameToMainMenu() {
   isButtonPressed = false;
   warningActive = false;
   hasWarningShown = false;
-  hasCriticalShown = false;
+  isShowingCriticalWarning = false;
   lastDangerCount = 0;
   isPaused = false;
   terminationTimer = null;
@@ -607,9 +645,10 @@ function terminate() {
   canvas3.style.top = "0";
   canvas3.style.left = "0";
   canvas3.style.pointerEvents = "auto"; // important: allow clicks
+  canvas3.style.willChange = "transform";
   document.body.appendChild(canvas3);
 
-  ctx3 = canvas3.getContext("2d");
+  ctx3 = canvas3.getContext("2d", { alpha: false });
 
   // CLICK / TOUCH TO RESET BACK TO MAIN MENU
   function handleResetClick() {
@@ -631,12 +670,17 @@ function terminate() {
     ctx3.font = `bold ${fontSize}px Eurostile_Cond_Heavy`;
     ctx3.textAlign = "center";
 
-    const t = performance.now() / 200;
-    const flicker = 0.6 + 0.4 * Math.sin(t);
-    const glow = glowBase * flicker;
+    // Optimized glow - update less frequently
+    glowUpdateCounter++;
+    if (glowUpdateCounter >= GLOW_UPDATE_FREQUENCY) {
+      const t = performance.now() / 200;
+      const flicker = 0.6 + 0.4 * Math.sin(t);
+      cachedGlowValue = glowBase * flicker;
+      glowUpdateCounter = 0;
+    }
 
     ctx3.shadowColor = "rgba(255, 255, 255, 0.9)";
-    ctx3.shadowBlur = glow;
+    ctx3.shadowBlur = cachedGlowValue * 0.7; // Reduced for mobile
     ctx3.shadowOffsetX = 0;
     ctx3.shadowOffsetY = 0;
 
