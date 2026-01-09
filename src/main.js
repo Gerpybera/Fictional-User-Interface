@@ -449,20 +449,27 @@ function showWarning(level) {
   if (!canvas3) {
     canvas3 = document.createElement("canvas");
     canvas3.id = "canvas3";
-    canvas3.width = window.innerWidth;
-    canvas3.height = window.innerHeight;
+
+    // Handle device pixel ratio for sharp rendering on high-DPI tablets
+    const dpr = window.devicePixelRatio || 1;
+    canvas3.width = window.innerWidth * dpr;
+    canvas3.height = window.innerHeight * dpr;
+
+    canvas3.style.width = window.innerWidth + "px";
+    canvas3.style.height = window.innerHeight + "px";
     canvas3.style.position = "absolute";
     canvas3.style.top = "0";
     canvas3.style.left = "0";
     canvas3.style.pointerEvents = "none";
     canvas3.style.willChange = "transform";
-    canvas3.style.imageRendering = "crisp-edges"; // Disable anti-aliasing
+    canvas3.style.imageRendering = "crisp-edges";
     document.body.appendChild(canvas3);
     ctx3 = canvas3.getContext("2d", {
       alpha: false,
-      desynchronized: true, // Better performance on tablets
+      desynchronized: true,
     });
-    // Disable font smoothing to prevent ghosting
+    // Scale context to device pixel ratio
+    ctx3.scale(dpr, dpr);
     ctx3.imageSmoothingEnabled = false;
   }
 
@@ -562,26 +569,26 @@ function drawWarning() {
   const centerY = canvas3.height / 2;
   const lineSpacing = fontSize * 0.1;
 
-  // // Only apply glow when at full opacity to avoid layering artifacts on tablets
-  // if (alphaText > 0.98) {
-  //   glowUpdateCounter++;
-  //   if (glowUpdateCounter >= GLOW_UPDATE_FREQUENCY) {
-  //     const t = performance.now() / 200;
-  //     const flicker = 0.6 + 0.4 * Math.sin(t);
-  //     cachedGlowValue = glowBase * flicker;
-  //     glowUpdateCounter = 0;
-  //   }
-  //   const glow = cachedGlowValue * 0.7;
+  // Only apply glow when at full opacity to avoid layering artifacts on tablets
+  if (alphaText > 0.98) {
+    glowUpdateCounter++;
+    if (glowUpdateCounter >= GLOW_UPDATE_FREQUENCY) {
+      const t = performance.now() / 200;
+      const flicker = 0.6 + 0.4 * Math.sin(t);
+      cachedGlowValue = glowBase * flicker;
+      glowUpdateCounter = 0;
+    }
+    const glow = cachedGlowValue * 0.7;
 
-  //   ctx3.shadowColor = `rgba(255, 255, 255, 0.9)`;
-  //   ctx3.shadowBlur = glow;
-  //   ctx3.shadowOffsetX = 0;
-  //   ctx3.shadowOffsetY = 0;
-  // } else {
-  //   // No glow during fade to prevent ghosting
-  //   ctx3.shadowBlur = 0;
-  //   ctx3.shadowColor = "rgba(0,0,0,0)";
-  // }
+    ctx3.shadowColor = `rgba(255, 255, 255, 0.9)`;
+    ctx3.shadowBlur = glow;
+    ctx3.shadowOffsetX = 0;
+    ctx3.shadowOffsetY = 0;
+  } else {
+    // No glow during fade to prevent ghosting
+    ctx3.shadowBlur = 0;
+    ctx3.shadowColor = "rgba(0,0,0,0)";
+  }
 
   // Use solid white with global alpha instead of rgba to avoid anti-aliasing issues
   ctx3.globalAlpha = alphaText;
