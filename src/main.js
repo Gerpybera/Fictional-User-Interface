@@ -537,6 +537,11 @@ function drawWarning() {
     isInCriticalMode = false;
   }
 
+  // Force complete clear and reset compositing
+  ctx3.save();
+  ctx3.globalCompositeOperation = "source-over";
+
+  // Clear with solid background
   ctx3.fillStyle = bgColor;
   ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
 
@@ -569,7 +574,9 @@ function drawWarning() {
     ctx3.shadowColor = "rgba(0,0,0,0)";
   }
 
-  ctx3.fillStyle = `rgba(255, 255, 255, ${alphaText})`;
+  // Use solid white with global alpha instead of rgba to avoid anti-aliasing issues
+  ctx3.globalAlpha = alphaText;
+  ctx3.fillStyle = "rgb(255, 255, 255)";
 
   ctx3.textBaseline = "bottom";
   ctx3.fillText(line1, centerX, centerY - lineSpacing / 2);
@@ -577,9 +584,7 @@ function drawWarning() {
   ctx3.textBaseline = "top";
   ctx3.fillText(line2, centerX, centerY + lineSpacing / 2);
 
-  // Cleanup
-  ctx3.shadowBlur = 0;
-  ctx3.shadowColor = "rgba(0,0,0,0)";
+  ctx3.restore();
 
   alphaText -= 0.01;
   if (alphaText < 0) alphaText = 0;
