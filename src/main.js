@@ -554,23 +554,32 @@ function drawWarning() {
   }
   const glow = cachedGlowValue * alphaText * 0.7; // Reduced for mobile
 
-  ctx3.shadowColor = `rgba(255, 255, 255, ${0.9 * alphaText})`;
-  ctx3.shadowBlur = glow;
-  ctx3.shadowOffsetX = 0;
-  ctx3.shadowOffsetY = 0;
-
-  ctx3.fillStyle = `rgba(255, 255, 255, ${alphaText})`;
-
   const centerX = canvas3.width / 2;
   const centerY = canvas3.height / 2;
   const lineSpacing = fontSize * 0.1;
 
+  // Draw first line with glow
+  ctx3.shadowColor = `rgba(255, 255, 255, ${0.9 * alphaText})`;
+  ctx3.shadowBlur = glow;
+  ctx3.shadowOffsetX = 0;
+  ctx3.shadowOffsetY = 0;
+  ctx3.fillStyle = `rgba(255, 255, 255, ${alphaText})`;
+
   ctx3.textBaseline = "bottom";
   ctx3.fillText(line1, centerX, centerY - lineSpacing / 2);
+
+  // Reset shadow before second line to prevent layering
+  ctx3.shadowBlur = 0;
+  ctx3.shadowColor = "rgba(0,0,0,0)";
+
+  // Draw second line with fresh glow
+  ctx3.shadowColor = `rgba(255, 255, 255, ${0.9 * alphaText})`;
+  ctx3.shadowBlur = glow;
 
   ctx3.textBaseline = "top";
   ctx3.fillText(line2, centerX, centerY + lineSpacing / 2);
 
+  // Final cleanup
   ctx3.shadowBlur = 0;
   ctx3.shadowColor = "rgba(0,0,0,0)";
 
