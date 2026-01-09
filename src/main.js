@@ -595,7 +595,7 @@ function drawWarning() {
 
   ctx3.restore();
 
-  alphaText -= 0.1;
+  alphaText -= 0.07;
   if (alphaText < 0) alphaText = 0;
 
   if (alphaText > 0 && warningActive) {
