@@ -456,8 +456,14 @@ function showWarning(level) {
     canvas3.style.left = "0";
     canvas3.style.pointerEvents = "none";
     canvas3.style.willChange = "transform";
+    canvas3.style.imageRendering = "crisp-edges"; // Disable anti-aliasing
     document.body.appendChild(canvas3);
-    ctx3 = canvas3.getContext("2d", { alpha: false });
+    ctx3 = canvas3.getContext("2d", {
+      alpha: false,
+      desynchronized: true, // Better performance on tablets
+    });
+    // Disable font smoothing to prevent ghosting
+    ctx3.imageSmoothingEnabled = false;
   }
 
   // pause bars and enter warning state
@@ -537,13 +543,16 @@ function drawWarning() {
     isInCriticalMode = false;
   }
 
-  // Force complete clear and reset compositing
+  // Force complete clear to prevent ghosting on tablets
   ctx3.save();
-  ctx3.globalCompositeOperation = "source-over";
+  ctx3.globalCompositeOperation = "copy"; // Replace everything, don't composite
 
-  // Clear with solid background
+  // Clear with solid background (copy mode ensures no blending)
   ctx3.fillStyle = bgColor;
   ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
+
+  // Switch back to normal compositing for text
+  ctx3.globalCompositeOperation = "source-over";
 
   const fontSize = Math.min(canvas3.width, canvas3.height) * 0.2;
   ctx3.font = `bold ${fontSize}px Eurostile_Cond_Heavy`;
