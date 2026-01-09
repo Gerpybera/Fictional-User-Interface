@@ -115,8 +115,15 @@ export default class Health {
     this.textPannelName(x, y, this.text);
   }
   textPannelName(x, y, text) {
-    const t = performance.now() / 200; // change 200 to adjust speed
-    const flicker = 0.6 + 0.4 * Math.sin(t); // 0.2–1.0 range
+    const t = performance.now() / 100;
+
+    // Create noisy flicker with multiple sine waves at different frequencies
+    const noise1 = Math.sin(t * 3.7 + this.index);
+    const noise2 = Math.sin(t * 7.3 + this.index * 1.5);
+    const noise3 = Math.sin(t * 11.1 + this.index * 2.3);
+
+    // Combine for chaotic flicker (ranges roughly 0.0 to 1.0)
+    const flicker = 0.5 + 0.3 * noise1 + 0.15 * noise2 + 0.05 * noise3;
 
     const glowBase = 15; // base blur
     const glow = glowBase * flicker;
