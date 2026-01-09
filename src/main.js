@@ -562,26 +562,26 @@ function drawWarning() {
   const centerY = canvas3.height / 2;
   const lineSpacing = fontSize * 0.1;
 
-  // Only apply glow when at full opacity to avoid layering artifacts on tablets
-  if (alphaText > 0.98) {
-    glowUpdateCounter++;
-    if (glowUpdateCounter >= GLOW_UPDATE_FREQUENCY) {
-      const t = performance.now() / 200;
-      const flicker = 0.6 + 0.4 * Math.sin(t);
-      cachedGlowValue = glowBase * flicker;
-      glowUpdateCounter = 0;
-    }
-    const glow = cachedGlowValue * 0.7;
+  // // Only apply glow when at full opacity to avoid layering artifacts on tablets
+  // if (alphaText > 0.98) {
+  //   glowUpdateCounter++;
+  //   if (glowUpdateCounter >= GLOW_UPDATE_FREQUENCY) {
+  //     const t = performance.now() / 200;
+  //     const flicker = 0.6 + 0.4 * Math.sin(t);
+  //     cachedGlowValue = glowBase * flicker;
+  //     glowUpdateCounter = 0;
+  //   }
+  //   const glow = cachedGlowValue * 0.7;
 
-    ctx3.shadowColor = `rgba(255, 255, 255, 0.9)`;
-    ctx3.shadowBlur = glow;
-    ctx3.shadowOffsetX = 0;
-    ctx3.shadowOffsetY = 0;
-  } else {
-    // No glow during fade to prevent ghosting
-    ctx3.shadowBlur = 0;
-    ctx3.shadowColor = "rgba(0,0,0,0)";
-  }
+  //   ctx3.shadowColor = `rgba(255, 255, 255, 0.9)`;
+  //   ctx3.shadowBlur = glow;
+  //   ctx3.shadowOffsetX = 0;
+  //   ctx3.shadowOffsetY = 0;
+  // } else {
+  //   // No glow during fade to prevent ghosting
+  //   ctx3.shadowBlur = 0;
+  //   ctx3.shadowColor = "rgba(0,0,0,0)";
+  // }
 
   // Use solid white with global alpha instead of rgba to avoid anti-aliasing issues
   ctx3.globalAlpha = alphaText;
