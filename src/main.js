@@ -543,16 +543,9 @@ function drawWarning() {
     isInCriticalMode = false;
   }
 
-  // Force complete clear to prevent ghosting on tablets
-  ctx3.save();
-  ctx3.globalCompositeOperation = "copy"; // Replace everything, don't composite
-
   // Clear with solid background (copy mode ensures no blending)
   ctx3.fillStyle = bgColor;
   ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
-
-  // Switch back to normal compositing for text
-  ctx3.globalCompositeOperation = "source-over";
 
   const fontSize = Math.min(canvas3.width, canvas3.height) * 0.2;
   ctx3.font = `bold ${fontSize}px Eurostile_Cond_Heavy`;
@@ -562,28 +555,9 @@ function drawWarning() {
   const centerY = canvas3.height / 2;
   const lineSpacing = fontSize * 0.1;
 
-  // Only apply glow when at full opacity to avoid layering artifacts on tablets
-  if (alphaText > 0.98) {
-    glowUpdateCounter++;
-    if (glowUpdateCounter >= GLOW_UPDATE_FREQUENCY) {
-      const t = performance.now() / 200;
-      const flicker = 0.6 + 0.4 * Math.sin(t);
-      cachedGlowValue = glowBase * flicker;
-      glowUpdateCounter = 0;
-    }
-    const glow = cachedGlowValue * 0.7;
+  // No shadow or glow effects
 
-    ctx3.shadowColor = `rgba(255, 255, 255, 0.9)`;
-    ctx3.shadowBlur = glow;
-    ctx3.shadowOffsetX = 0;
-    ctx3.shadowOffsetY = 0;
-  } else {
-    // No glow during fade to prevent ghosting
-    ctx3.shadowBlur = 0;
-    ctx3.shadowColor = "rgba(0,0,0,0)";
-  }
-
-  // Use solid white with global alpha instead of rgba to avoid anti-aliasing issues
+  // Use solid white with global alpha
   ctx3.globalAlpha = alphaText;
   ctx3.fillStyle = "rgb(255, 255, 255)";
 
@@ -595,7 +569,7 @@ function drawWarning() {
 
   ctx3.restore();
 
-  alphaText -= 0.07;
+  alphaText -= 0.01;
   if (alphaText < 0) alphaText = 0;
 
   if (alphaText > 0 && warningActive) {
