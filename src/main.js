@@ -449,27 +449,20 @@ function showWarning(level) {
   if (!canvas3) {
     canvas3 = document.createElement("canvas");
     canvas3.id = "canvas3";
-
-    // Handle device pixel ratio for sharp rendering on high-DPI tablets
-    const dpr = window.devicePixelRatio || 1;
-    canvas3.width = window.innerWidth * dpr;
-    canvas3.height = window.innerHeight * dpr;
-
-    canvas3.style.width = window.innerWidth + "px";
-    canvas3.style.height = window.innerHeight + "px";
+    canvas3.width = window.innerWidth;
+    canvas3.height = window.innerHeight;
     canvas3.style.position = "absolute";
     canvas3.style.top = "0";
     canvas3.style.left = "0";
     canvas3.style.pointerEvents = "none";
     canvas3.style.willChange = "transform";
-    canvas3.style.imageRendering = "crisp-edges";
+    canvas3.style.imageRendering = "crisp-edges"; // Disable anti-aliasing
     document.body.appendChild(canvas3);
     ctx3 = canvas3.getContext("2d", {
       alpha: false,
-      desynchronized: true,
+      desynchronized: true, // Better performance on tablets
     });
-    // Scale context to device pixel ratio
-    ctx3.scale(dpr, dpr);
+    // Disable font smoothing to prevent ghosting
     ctx3.imageSmoothingEnabled = false;
   }
 
