@@ -544,42 +544,40 @@ function drawWarning() {
   ctx3.font = `bold ${fontSize}px Eurostile_Cond_Heavy`;
   ctx3.textAlign = "center";
 
-  // Optimized glow calculation - update less frequently
-  glowUpdateCounter++;
-  if (glowUpdateCounter >= GLOW_UPDATE_FREQUENCY) {
-    const t = performance.now() / 200;
-    const flicker = 0.6 + 0.4 * Math.sin(t);
-    cachedGlowValue = glowBase * flicker;
-    glowUpdateCounter = 0;
-  }
-  const glow = cachedGlowValue * alphaText * 0.7; // Reduced for mobile
-
   const centerX = canvas3.width / 2;
   const centerY = canvas3.height / 2;
   const lineSpacing = fontSize * 0.1;
 
-  // Draw first line with glow
-  ctx3.shadowColor = `rgba(255, 255, 255, ${0.9 * alphaText})`;
-  ctx3.shadowBlur = glow;
-  ctx3.shadowOffsetX = 0;
-  ctx3.shadowOffsetY = 0;
+  // Only apply glow when at full opacity to avoid layering artifacts on tablets
+  if (alphaText > 0.98) {
+    glowUpdateCounter++;
+    if (glowUpdateCounter >= GLOW_UPDATE_FREQUENCY) {
+      const t = performance.now() / 200;
+      const flicker = 0.6 + 0.4 * Math.sin(t);
+      cachedGlowValue = glowBase * flicker;
+      glowUpdateCounter = 0;
+    }
+    const glow = cachedGlowValue * 0.7;
+
+    ctx3.shadowColor = `rgba(255, 255, 255, 0.9)`;
+    ctx3.shadowBlur = glow;
+    ctx3.shadowOffsetX = 0;
+    ctx3.shadowOffsetY = 0;
+  } else {
+    // No glow during fade to prevent ghosting
+    ctx3.shadowBlur = 0;
+    ctx3.shadowColor = "rgba(0,0,0,0)";
+  }
+
   ctx3.fillStyle = `rgba(255, 255, 255, ${alphaText})`;
 
   ctx3.textBaseline = "bottom";
   ctx3.fillText(line1, centerX, centerY - lineSpacing / 2);
 
-  // Reset shadow before second line to prevent layering
-  ctx3.shadowBlur = 0;
-  ctx3.shadowColor = "rgba(0,0,0,0)";
-
-  // Draw second line with fresh glow
-  ctx3.shadowColor = `rgba(255, 255, 255, ${0.9 * alphaText})`;
-  ctx3.shadowBlur = glow;
-
   ctx3.textBaseline = "top";
   ctx3.fillText(line2, centerX, centerY + lineSpacing / 2);
 
-  // Final cleanup
+  // Cleanup
   ctx3.shadowBlur = 0;
   ctx3.shadowColor = "rgba(0,0,0,0)";
 
