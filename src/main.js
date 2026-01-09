@@ -135,7 +135,7 @@ function createButton(x, y, width, height) {
 
   const centerX = x + width / 2;
   const centerY = y + height / 2;
-  const lineSpacing = fontSize * 0.7; // distance between lines
+  const lineSpacing = fontSize * 0.1; // distance between lines
 
   // Top line: LIFE FUNCTION
   ctx2.textBaseline = "bottom";
@@ -522,6 +522,7 @@ function triggerWarning(level) {
 }
 
 function drawWarning() {
+  requestAnimationFrame(drawWarning);
   if (terminated || !warningActive || !ctx3 || !canvas3) return;
 
   let level = currentWarningLevel;
@@ -547,34 +548,44 @@ function drawWarning() {
   ctx3.fillStyle = bgColor;
   ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
 
-  const fontSize = Math.min(canvas3.width, canvas3.height) * 0.2;
-  ctx3.font = `bold ${fontSize}px Eurostile_Cond_Heavy`;
-  ctx3.textAlign = "center";
+  // Only draw text if alpha is above threshold
+  if (alphaText > 0.01) {
+    const fontSize = Math.min(canvas3.width, canvas3.height) * 0.2;
+    ctx3.font = `bold ${fontSize}px Eurostile_Cond_Heavy`;
+    ctx3.textAlign = "center";
 
-  const centerX = canvas3.width / 2;
-  const centerY = canvas3.height / 2;
-  const lineSpacing = fontSize * 0.1;
+    const centerX = canvas3.width / 2;
+    const centerY = canvas3.height / 2;
+    const lineSpacing = fontSize * 0.1;
 
-  // No shadow or glow effects
+    // Use white text with global alpha
+    ctx3.globalAlpha = alphaText;
+    ctx3.fillStyle = "white";
 
-  // Use solid white with global alpha
-  ctx3.globalAlpha = alphaText;
-  ctx3.fillStyle = "rgb(255, 255, 255)";
+    ctx3.textBaseline = "bottom";
+    ctx3.fillText(line1, centerX, centerY - lineSpacing / 2);
 
-  ctx3.textBaseline = "bottom";
-  ctx3.fillText(line1, centerX, centerY - lineSpacing / 2);
+    ctx3.textBaseline = "top";
+    ctx3.fillText(line2, centerX, centerY + lineSpacing / 2);
 
-  ctx3.textBaseline = "top";
-  ctx3.fillText(line2, centerX, centerY + lineSpacing / 2);
+    ctx3.globalAlpha = 1.0; // Reset alpha for next frame's background
+  }
 
-  ctx3.restore();
+  //ctx3.restore();
 
-  alphaText -= 0.01;
-  if (alphaText < 0) alphaText = 0;
+  alphaText -= 0.005; // Fade speed
+  if (alphaText < 0) {
+    alphaText = 0;
+    warningAnimating = false; // stop animation when fully faded
+    return; // stop drawing when fully faded
+  }
+  //if (alphaText < 0) alphaText = 0;
+  /*
 
   if (alphaText > 0 && warningActive) {
     requestAnimationFrame(drawWarning);
   }
+    */
 }
 
 function resetGameToMainMenu() {
