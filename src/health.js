@@ -1,5 +1,5 @@
 export default class Health {
-  constructor(x, y, ctx, bColor, textUp, textUn, index) {
+  constructor(x, y, ctx, bColor, textUp, textUn, index, speed) {
     // Design PART
     this.width = ctx.canvas.width * 0.15;
     this.height = ctx.canvas.height * 0.1;
@@ -21,6 +21,8 @@ export default class Health {
     this.isHover = false;
     this.isDanger = false;
     this.index = index;
+    this.speed = speed || 1.0;
+    console.log(this.speed);
     this.setup();
 
     //console.log(this.width / 2 + (this.height / 4) * 5);
@@ -65,7 +67,7 @@ export default class Health {
   healthSignal(isPaused = false) {
     // Only progress if not paused
     if (!isPaused) {
-      this.baseX += 1; // Increment x position
+      this.baseX += this.speed; // Increment x position based on speed
     }
 
     const y = this.baseY + this.heartbeat(this.baseX) * this.amplitude;

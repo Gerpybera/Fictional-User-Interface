@@ -24,11 +24,6 @@ let alphaText = 1.0; // For fade effects
 let warningAnimating = false;
 let currentWarningLevel = null; // "warning" | "critical" | null
 
-let alphaMainMenu = 1.0; // For main menu text fade
-let alphaTerminated = 1.0; // For terminated screen text fade
-let lastMainMenuTime = 0; // Track time for consistent fade
-let lastTerminatedTime = 0; // Track time for consistent fade
-
 //variable to manage glowing effect
 const glowBase = 10;
 
@@ -59,12 +54,12 @@ const healthConfigs = [
 ];
 */
 const healthConfigs = [
-  { color: "#2B97A4", textUp: "CARDIO", textUn: "VASCULAR" },
-  { color: "#1D6E2C", textUp: "METABOLIC", textUn: "LEVELS" },
-  { color: "#2FA783", textUp: "CENTRAL", textUn: "NERV. SYSTEM" },
-  { color: "#5584B1", textUp: "PULMONARY", textUn: "FUNCTION" },
-  { color: "#47ACCA", textUp: "SYSTEM", textUn: "INTEGRATION" },
-  { color: "#3D4523", textUp: "LOCOMOTOR", textUn: "SYSTEM" },
+  { color: "#2B97A4", textUp: "CARDIO", textUn: "VASCULAR", speed: 0.2 },
+  { color: "#1D6E2C", textUp: "METABOLIC", textUn: "LEVELS", speed: 1.2 },
+  { color: "#2FA783", textUp: "CENTRAL", textUn: "NERV. SYSTEM", speed: 0.8 },
+  { color: "#5584B1", textUp: "PULMONARY", textUn: "FUNCTION", speed: 0.4 },
+  { color: "#47ACCA", textUp: "SYSTEM", textUn: "INTEGRATION", speed: 1.2 },
+  { color: "#3D4523", textUp: "LOCOMOTOR", textUn: "SYSTEM", speed: 1.4 },
 ];
 
 window.onload = () => {
@@ -130,24 +125,6 @@ function createButton(x, y, width, height) {
     glowUpdateCounter = 0;
   }
 
-  const centerX = x + width / 2;
-  const centerY = y + height / 2;
-  const lineSpacing = fontSize * 0.1; // distance between lines
-
-  // Update alpha for blink effect (fade out then instant reset) - time-based
-  const currentTime = performance.now();
-  if (lastMainMenuTime === 0) lastMainMenuTime = currentTime;
-  const deltaTime = currentTime - lastMainMenuTime;
-  lastMainMenuTime = currentTime;
-
-  alphaMainMenu -= (deltaTime / 1000) * 0.6; // Fade out over ~1.6 seconds
-  if (alphaMainMenu <= 0) {
-    alphaMainMenu = 1.0;
-  }
-
-  // Apply alpha FIRST before any drawing operations
-  ctx2.globalAlpha = alphaMainMenu;
-
   // Reduced shadow blur for better mobile performance
   ctx2.shadowColor = "rgba(255, 255, 255, 0.9)";
   ctx2.shadowBlur = cachedGlowValue * 0.7; // Reduced intensity
@@ -155,6 +132,10 @@ function createButton(x, y, width, height) {
   ctx2.shadowOffsetY = 0;
 
   ctx2.fillStyle = "white";
+
+  const centerX = x + width / 2;
+  const centerY = y + height / 2;
+  const lineSpacing = fontSize * 0.1; // distance between lines
 
   // Top line: LIFE FUNCTION
   ctx2.textBaseline = "bottom";
@@ -164,8 +145,7 @@ function createButton(x, y, width, height) {
   ctx2.textBaseline = "top";
   ctx2.fillText("SIMULATION", centerX, centerY + lineSpacing / 2);
 
-  // Reset alpha and shadow
-  ctx2.globalAlpha = 1.0;
+  // Optional: reset shadow if you draw other things later with ctx2
   ctx2.shadowBlur = 0;
 
   // Button press handling stays the same
@@ -176,30 +156,21 @@ function createButton(x, y, width, height) {
       clientY >= y &&
       clientY <= y + height
     ) {
-      // Store original volume
-      const warningVol = warningLoop.volume;
-      const criticalVol = criticalAlarm.volume;
-
-      // Set volume to 0 and reset to start
-      warningLoop.volume = 0;
-      warningLoop.currentTime = 0;
+      warningLoop.muted = true;
       warningLoop
         .play()
         .then(() => {
           warningLoop.pause();
-          warningLoop.currentTime = 0;
-          warningLoop.volume = warningVol;
+          warningLoop.muted = false;
         })
         .catch((e) => console.warn("Warning audio unlock failed", e));
 
-      criticalAlarm.volume = 0;
-      criticalAlarm.currentTime = 0;
+      criticalAlarm.muted = true;
       criticalAlarm
         .play()
         .then(() => {
           criticalAlarm.pause();
-          criticalAlarm.currentTime = 0;
-          criticalAlarm.volume = criticalVol;
+          criticalAlarm.muted = false;
         })
         .catch((e) => console.warn("Critical audio unlock failed", e));
 
@@ -293,7 +264,8 @@ function createHealthBars() {
       config.color,
       config.textUp,
       config.textUn,
-      index + 1
+      index + 1,
+      config.speed
     );
 
     // Restore isDanger state if it existed
@@ -601,7 +573,7 @@ function drawWarning() {
 
   //ctx3.restore();
 
-  alphaText -= 0.001; // Fade speed
+  alphaText -= 0.005; // Fade speed
   if (alphaText < 0) {
     alphaText = 0;
     warningAnimating = false; // stop animation when fully faded
@@ -652,10 +624,6 @@ function resetGameToMainMenu() {
   currentWarningLevel = null;
   isInWarningMode = false;
   isInCriticalMode = false;
-  alphaMainMenu = 1.0;
-  alphaTerminated = 1.0;
-  lastMainMenuTime = 0;
-  lastTerminatedTime = 0;
 
   // reset contexts and canvases
   ctx = ctx2 = ctx3 = null;
@@ -717,24 +685,6 @@ function terminate() {
       glowUpdateCounter = 0;
     }
 
-    const centerX = canvas3.width / 2;
-    const centerY = canvas3.height / 2;
-    const lineSpacing = fontSize * 0.1;
-
-    // Update alpha for blink effect (fade out then instant reset) - time-based
-    const currentTime = performance.now();
-    if (lastTerminatedTime === 0) lastTerminatedTime = currentTime;
-    const deltaTime = currentTime - lastTerminatedTime;
-    lastTerminatedTime = currentTime;
-
-    alphaTerminated -= (deltaTime / 1000) * 0.6; // Fade out over ~1.6 seconds
-    if (alphaTerminated <= 0) {
-      alphaTerminated = 1.0;
-    }
-
-    // Apply alpha FIRST before any drawing operations
-    ctx3.globalAlpha = alphaTerminated;
-
     ctx3.shadowColor = "rgba(255, 255, 255, 0.9)";
     ctx3.shadowBlur = cachedGlowValue * 0.7; // Reduced for mobile
     ctx3.shadowOffsetX = 0;
@@ -742,14 +692,15 @@ function terminate() {
 
     ctx3.fillStyle = "white";
 
+    const centerX = canvas3.width / 2;
+    const centerY = canvas3.height / 2;
+    const lineSpacing = fontSize * 0.1;
+
     ctx3.textBaseline = "bottom";
     ctx3.fillText("LIFE FUNCTIONS", centerX, centerY - lineSpacing / 2);
 
     ctx3.textBaseline = "top";
     ctx3.fillText("TERMINATED", centerX, centerY + lineSpacing / 2);
-
-    // Reset alpha
-    ctx3.globalAlpha = 1.0;
 
     if (terminated) requestAnimationFrame(renderTerminate);
   }
