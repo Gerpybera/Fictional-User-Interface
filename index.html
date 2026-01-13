@@ -10,6 +10,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="FUI" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="msapplication-tap-highlight" content="no" />
     <link rel="apple-touch-icon" href="./icon.svg" />
     <link rel="manifest" href="./manifest.json" />
     
@@ -19,6 +21,22 @@
   <body>
     <script type="module" src="./src/main.js"></script>
     <script>
+      // Request fullscreen on first interaction
+      function requestFullscreen() {
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen().catch(err => console.log('Fullscreen request failed:', err));
+        } else if (elem.webkitRequestFullscreen) {
+          elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) {
+          elem.msRequestFullscreen();
+        }
+      }
+      
+      // Trigger on first touch/click
+      document.addEventListener('touchstart', requestFullscreen, { once: true });
+      document.addEventListener('click', requestFullscreen, { once: true });
+      
       // Register Service Worker (only in production)
       if ('serviceWorker' in navigator && window.location.hostname !== 'localhost') {
         window.addEventListener('load', () => {
