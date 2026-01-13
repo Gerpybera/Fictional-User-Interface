@@ -395,13 +395,15 @@ function checkDangerCondition() {
     showWarning("critical");
     isShowingCriticalWarning = true;
   }
-  // Show warning when 2-4 are in danger
+  // Show warning when 2-4 are in danger (but NOT if already in critical mode)
   else if (
     dangerCount >= 2 &&
     dangerCount < 4 &&
     !warningActive &&
     !hasWarningShown &&
     dangerCount !== lastDangerCount &&
+    !isShowingCriticalWarning &&
+    !isInCriticalMode &&
     !terminated
   ) {
     showWarning("warning");
@@ -409,12 +411,13 @@ function checkDangerCondition() {
   }
 
   lastDangerCount = dangerCount;
-  if (dangerCount < 2) {
+  if (dangerCount < 1) {
     hasWarningShown = false; // Reset once danger count drops below 2
     stopAllSounds(); // Stop all sounds if no health is in danger
   }
-  if (dangerCount === 0) {
-    isShowingCriticalWarning = false; // Reset only when all healths are out of danger
+  if (dangerCount < 4) {
+    isShowingCriticalWarning = false; // Reset when dropping below critical threshold
+    isInCriticalMode = false; // Allow warning mode to trigger again
   }
 
   // Termination logic: all healths in danger -> start 3s timer
