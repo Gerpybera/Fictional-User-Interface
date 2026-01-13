@@ -24,6 +24,9 @@ let alphaText = 1.0; // For fade effects
 let warningAnimating = false;
 let currentWarningLevel = null; // "warning" | "critical" | null
 
+let alphaMainMenu = 1.0; // For main menu text fade
+let alphaTerminated = 1.0; // For terminated screen text fade
+
 //variable to manage glowing effect
 const glowBase = 10;
 
@@ -137,6 +140,15 @@ function createButton(x, y, width, height) {
   const centerY = y + height / 2;
   const lineSpacing = fontSize * 0.1; // distance between lines
 
+  // Update alpha for blink effect (fade out then instant reset)
+  alphaMainMenu -= 0.01;
+  if (alphaMainMenu <= 0) {
+    alphaMainMenu = 1.0;
+  }
+
+  // Apply alpha to text
+  ctx2.globalAlpha = alphaMainMenu;
+
   // Top line: LIFE FUNCTION
   ctx2.textBaseline = "bottom";
   ctx2.fillText("LIFE FUNCTION", centerX, centerY - lineSpacing / 2);
@@ -145,7 +157,8 @@ function createButton(x, y, width, height) {
   ctx2.textBaseline = "top";
   ctx2.fillText("SIMULATION", centerX, centerY + lineSpacing / 2);
 
-  // Optional: reset shadow if you draw other things later with ctx2
+  // Reset alpha and shadow
+  ctx2.globalAlpha = 1.0;
   ctx2.shadowBlur = 0;
 
   // Button press handling stays the same
@@ -199,10 +212,6 @@ function createButton(x, y, width, height) {
       handleButtonPress(touch.clientX, touch.clientY);
     }
   });
-}
-//Create Interaction System before Initialize Health Bars
-function lol() {
-  //placeholder
 }
 
 //Creating Health Bars
@@ -585,7 +594,7 @@ function drawWarning() {
 
   //ctx3.restore();
 
-  alphaText -= 0.005; // Fade speed
+  alphaText -= 0.001; // Fade speed
   if (alphaText < 0) {
     alphaText = 0;
     warningAnimating = false; // stop animation when fully faded
@@ -636,6 +645,8 @@ function resetGameToMainMenu() {
   currentWarningLevel = null;
   isInWarningMode = false;
   isInCriticalMode = false;
+  alphaMainMenu = 1.0;
+  alphaTerminated = 1.0;
 
   // reset contexts and canvases
   ctx = ctx2 = ctx3 = null;
@@ -708,11 +719,23 @@ function terminate() {
     const centerY = canvas3.height / 2;
     const lineSpacing = fontSize * 0.1;
 
+    // Update alpha for blink effect (fade out then instant reset)
+    alphaTerminated -= 0.01;
+    if (alphaTerminated <= 0) {
+      alphaTerminated = 1.0;
+    }
+
+    // Apply alpha to text
+    ctx3.globalAlpha = alphaTerminated;
+
     ctx3.textBaseline = "bottom";
     ctx3.fillText("LIFE FUNCTIONS", centerX, centerY - lineSpacing / 2);
 
     ctx3.textBaseline = "top";
     ctx3.fillText("TERMINATED", centerX, centerY + lineSpacing / 2);
+
+    // Reset alpha
+    ctx3.globalAlpha = 1.0;
 
     if (terminated) requestAnimationFrame(renderTerminate);
   }
