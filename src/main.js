@@ -130,14 +130,6 @@ function createButton(x, y, width, height) {
     glowUpdateCounter = 0;
   }
 
-  // Reduced shadow blur for better mobile performance
-  ctx2.shadowColor = "rgba(255, 255, 255, 0.9)";
-  ctx2.shadowBlur = cachedGlowValue * 0.7; // Reduced intensity
-  ctx2.shadowOffsetX = 0;
-  ctx2.shadowOffsetY = 0;
-
-  ctx2.fillStyle = "white";
-
   const centerX = x + width / 2;
   const centerY = y + height / 2;
   const lineSpacing = fontSize * 0.1; // distance between lines
@@ -153,8 +145,16 @@ function createButton(x, y, width, height) {
     alphaMainMenu = 1.0;
   }
 
-  // Apply alpha to text
+  // Apply alpha FIRST before any drawing operations
   ctx2.globalAlpha = alphaMainMenu;
+
+  // Reduced shadow blur for better mobile performance
+  ctx2.shadowColor = "rgba(255, 255, 255, 0.9)";
+  ctx2.shadowBlur = cachedGlowValue * 0.7; // Reduced intensity
+  ctx2.shadowOffsetX = 0;
+  ctx2.shadowOffsetY = 0;
+
+  ctx2.fillStyle = "white";
 
   // Top line: LIFE FUNCTION
   ctx2.textBaseline = "bottom";
@@ -717,13 +717,6 @@ function terminate() {
       glowUpdateCounter = 0;
     }
 
-    ctx3.shadowColor = "rgba(255, 255, 255, 0.9)";
-    ctx3.shadowBlur = cachedGlowValue * 0.7; // Reduced for mobile
-    ctx3.shadowOffsetX = 0;
-    ctx3.shadowOffsetY = 0;
-
-    ctx3.fillStyle = "white";
-
     const centerX = canvas3.width / 2;
     const centerY = canvas3.height / 2;
     const lineSpacing = fontSize * 0.1;
@@ -739,8 +732,15 @@ function terminate() {
       alphaTerminated = 1.0;
     }
 
-    // Apply alpha to text
+    // Apply alpha FIRST before any drawing operations
     ctx3.globalAlpha = alphaTerminated;
+
+    ctx3.shadowColor = "rgba(255, 255, 255, 0.9)";
+    ctx3.shadowBlur = cachedGlowValue * 0.7; // Reduced for mobile
+    ctx3.shadowOffsetX = 0;
+    ctx3.shadowOffsetY = 0;
+
+    ctx3.fillStyle = "white";
 
     ctx3.textBaseline = "bottom";
     ctx3.fillText("LIFE FUNCTIONS", centerX, centerY - lineSpacing / 2);

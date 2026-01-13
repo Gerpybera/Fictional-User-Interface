@@ -1,4 +1,4 @@
-const CACHE_NAME = "fui-cache-v3";
+const CACHE_NAME = "fui-cache-v4";
 const urlsToCache = [
   "/Fictional-User-Interface/",
   "/Fictional-User-Interface/index.html",
