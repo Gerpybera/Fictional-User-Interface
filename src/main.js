@@ -110,7 +110,7 @@ function drawMainMenu() {
   requestAnimationFrame(drawMainMenu);
 }
 function createButton(x, y, width, height) {
-  ctx2.fillStyle = switchColor ? "green" : "#A00012";
+  ctx2.fillStyle = switchColor ? "yellow" : "#A00012";
   ctx2.lineWidth = 5;
   ctx2.fillRect(x, y, width, height);
 
