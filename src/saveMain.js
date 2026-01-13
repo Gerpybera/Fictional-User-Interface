@@ -1,4 +1,4 @@
-//Create Save Main File, to avoid this stupid clanker to break my code
+//Create Save Main File, just in case my code's broken
 
 import Health from "./health";
 
