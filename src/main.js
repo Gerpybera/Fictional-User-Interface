@@ -156,21 +156,30 @@ function createButton(x, y, width, height) {
       clientY >= y &&
       clientY <= y + height
     ) {
-      warningLoop.muted = true;
+      // Store original volume
+      const warningVol = warningLoop.volume;
+      const criticalVol = criticalAlarm.volume;
+
+      // Set volume to 0 and reset to start
+      warningLoop.volume = 0;
+      warningLoop.currentTime = 0;
       warningLoop
         .play()
         .then(() => {
           warningLoop.pause();
-          warningLoop.muted = false;
+          warningLoop.currentTime = 0;
+          warningLoop.volume = warningVol;
         })
         .catch((e) => console.warn("Warning audio unlock failed", e));
 
-      criticalAlarm.muted = true;
+      criticalAlarm.volume = 0;
+      criticalAlarm.currentTime = 0;
       criticalAlarm
         .play()
         .then(() => {
           criticalAlarm.pause();
-          criticalAlarm.muted = false;
+          criticalAlarm.currentTime = 0;
+          criticalAlarm.volume = criticalVol;
         })
         .catch((e) => console.warn("Critical audio unlock failed", e));
 
