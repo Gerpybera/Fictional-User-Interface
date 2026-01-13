@@ -26,6 +26,8 @@ let currentWarningLevel = null; // "warning" | "critical" | null
 
 let alphaMainMenu = 1.0; // For main menu text fade
 let alphaTerminated = 1.0; // For terminated screen text fade
+let lastMainMenuTime = 0; // Track time for consistent fade
+let lastTerminatedTime = 0; // Track time for consistent fade
 
 //variable to manage glowing effect
 const glowBase = 10;
@@ -110,7 +112,7 @@ function drawMainMenu() {
   requestAnimationFrame(drawMainMenu);
 }
 function createButton(x, y, width, height) {
-  ctx2.fillStyle = switchColor ? "yellow" : "#A00012";
+  ctx2.fillStyle = switchColor ? "green" : "#A00012";
   ctx2.lineWidth = 5;
   ctx2.fillRect(x, y, width, height);
 
@@ -140,8 +142,13 @@ function createButton(x, y, width, height) {
   const centerY = y + height / 2;
   const lineSpacing = fontSize * 0.1; // distance between lines
 
-  // Update alpha for blink effect (fade out then instant reset)
-  alphaMainMenu -= 0.01;
+  // Update alpha for blink effect (fade out then instant reset) - time-based
+  const currentTime = performance.now();
+  if (lastMainMenuTime === 0) lastMainMenuTime = currentTime;
+  const deltaTime = currentTime - lastMainMenuTime;
+  lastMainMenuTime = currentTime;
+
+  alphaMainMenu -= (deltaTime / 1000) * 0.6; // Fade out over ~1.6 seconds
   if (alphaMainMenu <= 0) {
     alphaMainMenu = 1.0;
   }
@@ -647,6 +654,8 @@ function resetGameToMainMenu() {
   isInCriticalMode = false;
   alphaMainMenu = 1.0;
   alphaTerminated = 1.0;
+  lastMainMenuTime = 0;
+  lastTerminatedTime = 0;
 
   // reset contexts and canvases
   ctx = ctx2 = ctx3 = null;
@@ -719,8 +728,13 @@ function terminate() {
     const centerY = canvas3.height / 2;
     const lineSpacing = fontSize * 0.1;
 
-    // Update alpha for blink effect (fade out then instant reset)
-    alphaTerminated -= 0.01;
+    // Update alpha for blink effect (fade out then instant reset) - time-based
+    const currentTime = performance.now();
+    if (lastTerminatedTime === 0) lastTerminatedTime = currentTime;
+    const deltaTime = currentTime - lastTerminatedTime;
+    lastTerminatedTime = currentTime;
+
+    alphaTerminated -= (deltaTime / 1000) * 0.6; // Fade out over ~1.6 seconds
     if (alphaTerminated <= 0) {
       alphaTerminated = 1.0;
     }
