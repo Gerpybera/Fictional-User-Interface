@@ -1,5 +1,3 @@
-//Create Save Main File, to avoid this stupid clanker to break my code
-
 import Health from "./health";
 
 let ctx; // Declare ctx in global scope
