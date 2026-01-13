@@ -15,14 +15,16 @@ export default class Health {
     this.speed = 0.05; // how fast the wave moves
     this.amplitude = 40; // wave height in px
     this.trail = [];
-    this.randomSpeed = Math.random() * 2 + 0.1;
     this.ctx = ctx;
+    this.startTime = performance.now();
+    this.initialTiming = Math.random() * 15000 + 2000;
+    this.minTiming = 100; // minimum timing in ms
+    this.timingDecayDuration = 60000; // time to reach minimum (60 seconds)
     // Interaction PART
     this.isHover = false;
     this.isDanger = false;
     this.index = index;
     this.speed = speed || 1.0;
-    console.log(this.speed);
     this.setup();
 
     //console.log(this.width / 2 + (this.height / 4) * 5);
@@ -191,13 +193,29 @@ export default class Health {
       this.healthyState();
     }
   }
+  getCurrentTiming() {
+    const elapsed = performance.now() - this.startTime;
+    const progress = Math.min(elapsed / this.timingDecayDuration, 1);
+    // Linear interpolation from initialTiming to minTiming
+    return (
+      this.initialTiming - (this.initialTiming - this.minTiming) * progress
+    );
+  }
+
   dangerEvent() {
     this._dangerPaused = false;
-    this._dangerInterval = setInterval(() => {
-      if (!this._dangerPaused) {
-        this.isDanger = true;
+    const scheduleDanger = () => {
+      if (this._dangerTimeout) {
+        clearTimeout(this._dangerTimeout);
       }
-    }, Math.random() * 15000 + 2000);
+      this._dangerTimeout = setTimeout(() => {
+        if (!this._dangerPaused) {
+          this.isDanger = true;
+        }
+        scheduleDanger(); // Schedule next danger event
+      }, this.getCurrentTiming());
+    };
+    scheduleDanger();
   }
 
   pauseDanger() {

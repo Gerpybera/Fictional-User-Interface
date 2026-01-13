@@ -21,6 +21,7 @@ let terminated = false; // Permanent termination state
 let alphaText = 1.0; // For fade effects
 let warningAnimating = false;
 let currentWarningLevel = null; // "warning" | "critical" | null
+let warningAnimationId = null; // Track the animation frame ID
 
 //variable to manage glowing effect
 const glowBase = 10;
@@ -379,35 +380,32 @@ function handleInteraction(x, y) {
 function checkDangerCondition() {
   const dangerCount = healths.filter((health) => health.isDanger).length;
 
-  // Show critical warning when 4 or more are in danger
+  // Show critical warning when transitioning from <4 to >=4
   if (
     dangerCount >= 4 &&
+    lastDangerCount < 4 &&
     !warningActive &&
-    dangerCount !== lastDangerCount &&
     !isShowingCriticalWarning &&
     !terminated
   ) {
     showWarning("critical");
     isShowingCriticalWarning = true;
   }
-  // Show warning when 2-4 are in danger (but NOT if already in critical mode)
+  // Show warning when transitioning from <2 to >=2 (but NOT if already in critical mode)
   else if (
     dangerCount >= 2 &&
     dangerCount < 4 &&
+    lastDangerCount < 2 &&
     !warningActive &&
-    !hasWarningShown &&
-    dangerCount !== lastDangerCount &&
     !isShowingCriticalWarning &&
     !isInCriticalMode &&
     !terminated
   ) {
     showWarning("warning");
-    hasWarningShown = true;
   }
 
   lastDangerCount = dangerCount;
   if (dangerCount < 1) {
-    hasWarningShown = false; // Reset once danger count drops below 2
     stopAllSounds(); // Stop all sounds if no health is in danger
   }
   if (dangerCount < 4) {
@@ -472,6 +470,13 @@ function showWarning(level) {
   // reset alpha every time a warning is triggered
   alphaText = 1.0;
 
+  // Cancel any existing animation loop before starting a new one
+  if (warningAnimationId) {
+    cancelAnimationFrame(warningAnimationId);
+    warningAnimationId = null;
+    warningAnimating = false;
+  }
+
   // auto-remove after 3s (overlay only)
   setTimeout(() => {
     if (canvas3 && canvas3.parentNode) {
@@ -498,6 +503,7 @@ function showWarning(level) {
   }
 
   // always (re)start animation; do not guard with warningAnimating
+  warningAnimating = true;
   drawWarning();
 }
 
@@ -520,11 +526,18 @@ function triggerWarning(level) {
 }
 
 function drawWarning() {
-  requestAnimationFrame(drawWarning);
-  if (terminated || !warningActive || !ctx3 || !canvas3) return;
+  if (terminated || !warningActive || !ctx3 || !canvas3) {
+    warningAnimating = false;
+    warningAnimationId = null;
+    return;
+  }
 
   let level = currentWarningLevel;
-  if (!level) return; // nothing to draw
+  if (!level) {
+    warningAnimating = false;
+    warningAnimationId = null;
+    return;
+  }
 
   let bgColor, line1, line2;
 
@@ -575,7 +588,15 @@ function drawWarning() {
   if (alphaText < 0) {
     alphaText = 0;
     warningAnimating = false; // stop animation when fully faded
+    warningAnimationId = null;
     return; // stop drawing when fully faded
+  }
+
+  // Continue animation loop only if still active
+  if (warningAnimating && alphaText > 0) {
+    warningAnimationId = requestAnimationFrame(drawWarning);
+  } else {
+    warningAnimationId = null;
   }
   //if (alphaText < 0) alphaText = 0;
   /*
