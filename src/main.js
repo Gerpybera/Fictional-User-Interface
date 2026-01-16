@@ -578,16 +578,14 @@ function drawWarning() {
     const lineSpacing = fontSize * 0.1;
 
     // Use white text with global alpha
-    ctx3.globalAlpha = alphaText;
-    ctx3.fillStyle = "white";
+
+    ctx3.fillStyle = `rgba(255, 255, 255, ${alphaText})`;
 
     ctx3.textBaseline = "bottom";
     ctx3.fillText(line1, centerX, centerY - lineSpacing / 2);
 
     ctx3.textBaseline = "top";
     ctx3.fillText(line2, centerX, centerY + lineSpacing / 2);
-
-    ctx3.globalAlpha = 1.0; // Reset alpha for next frame's background
   }
 
   //ctx3.restore();
@@ -660,10 +658,14 @@ function resetGameToMainMenu() {
   CreateMainMenu();
 }
 
+let alphaTerminateText = 1.0;
+let isTerminatingScreenActive = false;
+
 function terminate() {
   terminated = true;
   isPaused = true;
   warningActive = true;
+  isTerminatingScreenActive = true;
 
   healths.forEach((h) => {
     if (typeof h.pauseDanger === "function") h.pauseDanger();
@@ -688,6 +690,7 @@ function terminate() {
     // prevent multiple calls
     if (!terminated) return;
     isMenuVisible = true; // Set to true when returning to main menu
+    isTerminatingScreenActive = false; // Set to false when leaving termination screen
     resetGameToMainMenu();
   }
   canvas3.addEventListener("click", handleResetClick);
@@ -718,7 +721,7 @@ function terminate() {
     ctx3.shadowOffsetX = 0;
     ctx3.shadowOffsetY = 0;
 
-    ctx3.fillStyle = "white";
+    ctx3.fillStyle = `rgba(255, 255, 255, ${alphaTerminateText})`;
 
     const centerX = canvas3.width / 2;
     const centerY = canvas3.height / 2;
@@ -729,6 +732,10 @@ function terminate() {
 
     ctx3.textBaseline = "top";
     ctx3.fillText("TERMINATED", centerX, centerY + lineSpacing / 2);
+    if (isTerminatingScreenActive) {
+      alphaTerminateText -= 0.03; // Fade speed
+      if (alphaTerminateText < 0) alphaTerminateText = 1.0;
+    }
 
     if (terminated) requestAnimationFrame(renderTerminate);
   }
