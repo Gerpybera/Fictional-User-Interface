@@ -570,7 +570,7 @@ function drawWarning() {
   // Only draw text if alpha is above threshold
   if (alphaText > 0.01) {
     const fontSize = Math.min(canvas3.width, canvas3.height) * 0.2;
-    ctx3.font = `bold ${fontSize}px Eurostile_Cond_Heavy`;
+    ctx3.font = `${fontSize}px Eurostile_Cond_Heavy`;
     ctx3.textAlign = "center";
 
     const centerX = canvas3.width / 2;
