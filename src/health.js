@@ -315,7 +315,7 @@ export default class Health {
         y -= 0.25 * Math.exp(-Math.pow((t - 0.28) / 0.01, 2));
 
         // R main spike
-        y += 1.4 * Math.exp(-Math.pow((t - 0.3) / 0.008, 2));
+        y += 0.9 * Math.exp(-Math.pow((t - 0.3) / 0.008, 2));
 
         // S small dip after spike
         y -= 0.35 * Math.exp(-Math.pow((t - 0.33) / 0.01, 2));
@@ -361,7 +361,7 @@ export default class Health {
             Math.abs(d + period),
             Math.abs(d - period)
           );
-          y += 0.6 * Math.exp(-Math.pow(wrapped / 0.008, 2));
+          y += 0.35 * Math.exp(-Math.pow(wrapped / 0.008, 2));
         }
 
         return y;
