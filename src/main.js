@@ -68,6 +68,8 @@ window.onload = () => {
 //Create Main Menu
 let switchColor = false;
 let mainMenuInterval = null; // Store interval ID to clear it later
+let textMenuOpacity = 1.0;
+let isMenuVisible = true;
 
 function CreateMainMenu() {
   // Clear any existing interval to prevent stacking
@@ -130,7 +132,7 @@ function createButton(x, y, width, height) {
   ctx2.shadowOffsetX = 0;
   ctx2.shadowOffsetY = 0;
 
-  ctx2.fillStyle = "white";
+  ctx2.fillStyle = "rgba(255, 255, 255," + textMenuOpacity + ")";
 
   const centerX = x + width / 2;
   const centerY = y + height / 2;
@@ -143,6 +145,11 @@ function createButton(x, y, width, height) {
   // Bottom line: SIMULATION
   ctx2.textBaseline = "top";
   ctx2.fillText("SIMULATION", centerX, centerY + lineSpacing / 2);
+  console.log(textMenuOpacity);
+  if (isMenuVisible) {
+    textMenuOpacity -= 0.01;
+    if (textMenuOpacity < 0.3) textMenuOpacity = 1.0;
+  }
 
   // Optional: reset shadow if you draw other things later with ctx2
   ctx2.shadowBlur = 0;
@@ -174,6 +181,7 @@ function createButton(x, y, width, height) {
         .catch((e) => console.warn("Critical audio unlock failed", e));
 
       isButtonPressed = true;
+      isMenuVisible = false; // Set to false when leaving main menu
       document.body.removeChild(canvas2);
       InitializeHealth();
     }
@@ -679,6 +687,7 @@ function terminate() {
   function handleResetClick() {
     // prevent multiple calls
     if (!terminated) return;
+    isMenuVisible = true; // Set to true when returning to main menu
     resetGameToMainMenu();
   }
   canvas3.addEventListener("click", handleResetClick);
