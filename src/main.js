@@ -704,7 +704,7 @@ function terminate() {
     ctx3.fillRect(0, 0, canvas3.width, canvas3.height);
 
     const fontSize = Math.min(canvas3.width, canvas3.height) * 0.2;
-    ctx3.font = `bold ${fontSize}px Eurostile_Cond_Heavy`;
+    ctx3.font = `${fontSize}px Eurostile_Cond_Heavy`;
     ctx3.textAlign = "center";
 
     // Optimized glow - update less frequently
