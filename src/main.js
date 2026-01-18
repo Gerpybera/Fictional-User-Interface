@@ -22,6 +22,7 @@ let alphaText = 1.0; // For fade effects
 let warningAnimating = false;
 let currentWarningLevel = null; // "warning" | "critical" | null
 let warningAnimationId = null; // Track the animation frame ID
+let warningStartTime = 0; // Track when warning animation started
 
 //variable to manage glowing effect
 const glowBase = 10;
@@ -70,6 +71,7 @@ let switchColor = false;
 let mainMenuInterval = null; // Store interval ID to clear it later
 let textMenuOpacity = 1.0;
 let isMenuVisible = true;
+let menuAnimStartTime = 0;
 
 function CreateMainMenu() {
   // Clear any existing interval to prevent stacking
@@ -88,6 +90,7 @@ function CreateMainMenu() {
   mainMenuInterval = setInterval(() => {
     switchColor = !switchColor;
   }, 500);
+  menuAnimStartTime = performance.now();
   drawMainMenu();
 }
 function drawMainMenu() {
@@ -103,7 +106,7 @@ function drawMainMenu() {
     canvas2.width / 2 - titleSizeX / 2,
     canvas2.height / 2 - titleSizeY / 2,
     titleSizeX,
-    titleSizeY
+    titleSizeY,
   );
   requestAnimationFrame(drawMainMenu);
 }
@@ -145,10 +148,14 @@ function createButton(x, y, width, height) {
   // Bottom line: SIMULATION
   ctx2.textBaseline = "top";
   ctx2.fillText("SIMULATION", centerX, centerY + lineSpacing / 2);
-  console.log(textMenuOpacity);
+
   if (isMenuVisible) {
-    textMenuOpacity -= 0.01;
-    if (textMenuOpacity < 0.3) textMenuOpacity = 1.0;
+    // Time-based fade animation - fade out then snap back
+    const elapsed = performance.now() - menuAnimStartTime;
+    const cycleDuration = 2000; // 2 seconds per cycle
+    const cycleProgress = (elapsed % cycleDuration) / cycleDuration;
+    // Fade from 1.0 to 0.3, then snap back to 1.0
+    textMenuOpacity = 1.0 - 0.7 * cycleProgress;
   }
 
   // Optional: reset shadow if you draw other things later with ctx2
@@ -272,7 +279,7 @@ function createHealthBars() {
       config.textUp,
       config.textUn,
       index + 1,
-      config.speed
+      config.speed,
     );
 
     // Restore isDanger state if it existed
@@ -316,7 +323,7 @@ function setupEventListeners() {
         handleHover(e.touches[0].clientX, e.touches[0].clientY);
       }
     },
-    { passive: true }
+    { passive: true },
   );
 
   // Click interaction (desktop)
@@ -340,7 +347,7 @@ function setupEventListeners() {
         e.preventDefault();
       }
     },
-    { passive: false }
+    { passive: false },
   );
 }
 
@@ -475,8 +482,9 @@ function showWarning(level) {
   isPaused = true;
   healths.forEach((h) => h.pauseDanger());
 
-  // reset alpha every time a warning is triggered
+  // reset alpha and timing every time a warning is triggered
   alphaText = 1.0;
+  warningStartTime = performance.now();
 
   // Cancel any existing animation loop before starting a new one
   if (warningAnimationId) {
@@ -547,6 +555,11 @@ function drawWarning() {
     return;
   }
 
+  // Calculate alpha based on elapsed time (time-based, not frame-based)
+  const elapsed = performance.now() - warningStartTime;
+  const fadeDuration = 1000; // 1 seconds to fade from 1 to 0
+  alphaText = Math.max(0, 1 - elapsed / fadeDuration);
+
   let bgColor, line1, line2;
 
   if (level === "critical") {
@@ -590,27 +603,13 @@ function drawWarning() {
 
   //ctx3.restore();
 
-  alphaText -= 0.005; // Fade speed
-  if (alphaText < 0) {
-    alphaText = 0;
-    warningAnimating = false; // stop animation when fully faded
-    warningAnimationId = null;
-    return; // stop drawing when fully faded
-  }
-
   // Continue animation loop only if still active
   if (warningAnimating && alphaText > 0) {
     warningAnimationId = requestAnimationFrame(drawWarning);
   } else {
+    warningAnimating = false;
     warningAnimationId = null;
   }
-  //if (alphaText < 0) alphaText = 0;
-  /*
-
-  if (alphaText > 0 && warningActive) {
-    requestAnimationFrame(drawWarning);
-  }
-    */
 }
 
 function resetGameToMainMenu() {
@@ -660,12 +659,14 @@ function resetGameToMainMenu() {
 
 let alphaTerminateText = 1.0;
 let isTerminatingScreenActive = false;
+let terminateAnimStartTime = 0;
 
 function terminate() {
   terminated = true;
   isPaused = true;
   warningActive = true;
   isTerminatingScreenActive = true;
+  terminateAnimStartTime = performance.now();
 
   healths.forEach((h) => {
     if (typeof h.pauseDanger === "function") h.pauseDanger();
@@ -732,9 +733,13 @@ function terminate() {
 
     ctx3.textBaseline = "top";
     ctx3.fillText("TERMINATED", centerX, centerY + lineSpacing / 2);
+
     if (isTerminatingScreenActive) {
-      alphaTerminateText -= 0.03; // Fade speed
-      if (alphaTerminateText < 0) alphaTerminateText = 1.0;
+      // Time-based fade animation - fade out then snap back
+      const elapsed = performance.now() - terminateAnimStartTime;
+      const cycleDuration = 1000; // 1 second per cycle
+      const cycleProgress = (elapsed % cycleDuration) / cycleDuration;
+      alphaTerminateText = 1.0 - cycleProgress;
     }
 
     if (terminated) requestAnimationFrame(renderTerminate);
@@ -867,6 +872,7 @@ warningLoop.addEventListener("ended", () => {
     playWarningSound();
   }
   if (!terminated && warningActive && currentWarningLevel === "warning") {
+    warningStartTime = performance.now();
     alphaText = 1.0;
     drawWarning();
   }
@@ -877,6 +883,7 @@ criticalAlarm.addEventListener("ended", () => {
     playCriticalSound();
   }
   if (!terminated && warningActive && currentWarningLevel === "critical") {
+    warningStartTime = performance.now();
     alphaText = 1.0;
     drawWarning();
   }

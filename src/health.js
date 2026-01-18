@@ -19,7 +19,7 @@ export default class Health {
     this.startTime = performance.now();
     this.initialTiming = Math.random() * 15000 + 2000;
     this.minTiming = 100; // minimum timing in ms
-    this.timingDecayDuration = 60000; // time to reach minimum (60 seconds)
+    this.timingDecayDuration = 120000; // time to reach minimum (120 seconds)
     // Interaction PART
     this.isHover = false;
     this.isDanger = false;
@@ -46,7 +46,7 @@ export default class Health {
         this.y,
         this.height / 4,
         5,
-        4
+        4,
       );
       this.ctx.lineWidth = 4;
       this.ctx.strokeStyle = this.color;
@@ -54,7 +54,7 @@ export default class Health {
         this.x + this.width + i * (this.height / 4) * 5,
         this.y,
         (this.height / 4) * 5,
-        this.height
+        this.height,
       );
     }
 
@@ -359,7 +359,7 @@ export default class Health {
           const wrapped = Math.min(
             Math.abs(d),
             Math.abs(d + period),
-            Math.abs(d - period)
+            Math.abs(d - period),
           );
           y += 0.35 * Math.exp(-Math.pow(wrapped / 0.008, 2));
         }
