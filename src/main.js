@@ -876,20 +876,10 @@ warningLoop.addEventListener("ended", () => {
   if (isInWarningMode && !terminated) {
     playWarningSound();
   }
-  if (!terminated && warningActive && currentWarningLevel === "warning") {
-    warningStartTime = performance.now();
-    alphaText = 1.0;
-    drawWarning();
-  }
 });
 
 criticalAlarm.addEventListener("ended", () => {
   if (isInCriticalMode && !terminated) {
     playCriticalSound();
-  }
-  if (!terminated && warningActive && currentWarningLevel === "critical") {
-    warningStartTime = performance.now();
-    alphaText = 1.0;
-    drawWarning();
   }
 });
