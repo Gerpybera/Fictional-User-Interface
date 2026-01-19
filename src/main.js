@@ -506,17 +506,21 @@ function showWarning(level) {
     currentWarningLevel = null;
   }, 3000);
 
-  // sounds
-  if (level === "warning") {
-    playWarningSound();
-  } else if (level === "critical") {
-    playCriticalSound();
-  } else {
-    stopAllSounds();
-  }
-  if (dangerCount2 < 2) {
-    stopAllSounds();
-  }
+  // Delay sound playback until text is fully visible (after fade completes)
+  const fadeDuration = 1000; // 1 second fade duration
+  setTimeout(() => {
+    // sounds
+    if (level === "warning") {
+      playWarningSound();
+    } else if (level === "critical") {
+      playCriticalSound();
+    } else {
+      stopAllSounds();
+    }
+    if (dangerCount2 < 2) {
+      stopAllSounds();
+    }
+  }, fadeDuration);
 
   // always (re)start animation; do not guard with warningAnimating
   warningAnimating = true;
@@ -557,8 +561,9 @@ function drawWarning() {
 
   // Calculate alpha based on elapsed time (time-based, not frame-based)
   const elapsed = performance.now() - warningStartTime;
-  const fadeDuration = 1000; // 1 seconds to fade from 1 to 0
-  alphaText = Math.max(0, 1 - elapsed / fadeDuration);
+  const fadeDuration = 1000; // 1 second fade cycle
+  const cycleProgress = (elapsed % fadeDuration) / fadeDuration;
+  alphaText = 1.0 - cycleProgress;
 
   let bgColor, line1, line2;
 

@@ -5,7 +5,7 @@
   "start_url": "/Fictional-User-Interface/",
   "display": "standalone",
   "background_color": "#000000",
-  "theme_color": "#000000",
+  "theme_color": "transparent",
   "orientation": "any",
   "icons": [
     {
