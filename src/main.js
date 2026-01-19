@@ -604,7 +604,7 @@ function drawWarning() {
   //ctx3.restore();
 
   // Continue animation loop only if still active
-  if (warningAnimating && alphaText > 0) {
+  if (warningAnimating) {
     warningAnimationId = requestAnimationFrame(drawWarning);
   } else {
     warningAnimating = false;
