@@ -557,9 +557,8 @@ function drawWarning() {
 
   // Calculate alpha based on elapsed time (time-based, not frame-based)
   const elapsed = performance.now() - warningStartTime;
-  const fadeDuration = 1000; // 1 second fade cycle
-  const cycleProgress = (elapsed % fadeDuration) / fadeDuration;
-  alphaText = 1.0 - cycleProgress;
+  const fadeDuration = 1000; // 1 seconds to fade from 1 to 0
+  alphaText = Math.max(0, 1 - elapsed / fadeDuration);
 
   let bgColor, line1, line2;
 
@@ -605,7 +604,7 @@ function drawWarning() {
   //ctx3.restore();
 
   // Continue animation loop only if still active
-  if (warningAnimating) {
+  if (warningAnimating && alphaText > 0) {
     warningAnimationId = requestAnimationFrame(drawWarning);
   } else {
     warningAnimating = false;
